@@ -61,5 +61,3 @@ noisy_test:
 
 test:
 	ape test --network ethereum:local:test
-
-ape run scripts/campaign_manager.py run-next-taiko --network taiko:mainnet:node

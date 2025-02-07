@@ -446,16 +446,18 @@ cli.add_command(set_reward_epochs)
 @account_option()
 def run_next_taiko(account):
     # on taiko
+    account.set_autosign(True)
 
-    campaign_address = ["0xb74370F716f1D552684c98a8b4DDF9859960386c",
-    "0x9cCd30A992EC6775ad4B95fc267e7Fd28d7f52A9", 
+    campaign_address = ["0xb74370F716f1D552684c98a8b4DDF9859960386c", 
     "0x51A910e5fde25a53d9b80b13d5E948E1a88b245f", 
     "0xDB23003932abcA63b64422A29E11f9c58B9688F5", 
     "0xC09d2E66c7f5Ae67b03F4B32f59Da8A08cddc50B", 
     "0xfdb6a782aAa9254fAb82eE39b3fd7728C8442f0D",
     "0x9511623fB1C793B875B490FC331df503108E9313"]
+    campaign_address = ["0x9511623fB1C793B875B490FC331df503108E9313"] 
 
     for address in campaign_address:
+        print(f"address: {address}")
         single_campaign = project.SingleCampaign.at(address)
         next_epoch_info = single_campaign.get_next_epoch_info()
         DISTRIBUTION_BUFFER = single_campaign.DISTRIBUTION_BUFFER()
@@ -471,10 +473,14 @@ def run_next_taiko(account):
         if next_epoch_info[1]  < DISTRIBUTION_BUFFER:
             if single_campaign.execution_allowed():
                 print(f"Next epoch info is less than 2 days for campaign: {address}")
-                distribute_reward = single_campaign.distribute_reward(sender=account)
-                print(f"distribute_reward: {distribute_reward}")    
-                next_epoch_info = single_campaign.get_next_epoch_info()
-                print(f"next_epoch_info: {next_epoch_info}")
+                # distribute_reward = single_campaign.distribute_reward(sender=account)
+                # print(f"distribute_reward: {distribute_reward}")    
+
+                execute = single_campaign.execute(sender=account)
+                print(f"execute: {execute}")    
+
+                #next_epoch_info = single_campaign.get_next_epoch_info()
+                #print(f"next_epoch_info: {next_epoch_info}")
         else:
             print(f"Nothing executed for campaign, to early or outside of buffer time")
 
