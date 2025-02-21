@@ -629,3 +629,68 @@ def test_next_execution_payment_amount(bob, charlie, distributor, single_campaig
     # Send more than needed
     crvusd_token.transfer(single_campaign.address, execute_reward, sender=charlie)
     assert single_campaign.next_execution_payment_amount() == execute_reward
+
+def test_remove_reward_epochs(bob, charlie, distributor, single_campaign, test_gauge):
+    """Test removing reward epochs"""
+    epochs = [1 * 10**18, 2 * 10**18, 3 * 10**18]
+    min_epoch_duration = 4 * DAY
+    
+    # Setup campaign
+    single_campaign.setup(distributor.address, test_gauge.address, min_epoch_duration, 1, "test", sender=bob)
+    single_campaign.set_reward_epochs(epochs, sender=charlie)
+    
+    # Verify initial state
+    assert single_campaign.get_number_of_remaining_epochs() == 3
+    assert single_campaign.is_reward_epochs_set()
+    
+    # Remove epochs
+    single_campaign.remove_reward_epochs(sender=bob)
+    
+    # Verify epochs were removed
+    assert single_campaign.get_number_of_remaining_epochs() == 0
+    # Flag should still be true to prevent reuse
+    assert single_campaign.is_reward_epochs_set()
+
+    with ape.reverts("No remaining reward epochs"):
+        single_campaign.execution_allowed()
+
+
+def test_remove_reward_epochs_revert_not_guard(alice, bob, charlie, distributor, single_campaign, test_gauge):
+    """Test that non-guards cannot remove reward epochs"""
+    epochs = [1 * 10**18, 2 * 10**18]
+    min_epoch_duration = 4 * DAY
+    
+    # Setup campaign
+    single_campaign.setup(distributor.address, test_gauge.address, min_epoch_duration, 1, "test", sender=bob)
+    single_campaign.set_reward_epochs(epochs, sender=charlie)
+    
+    # Try to remove epochs with non-guard account
+    with ape.reverts("only guards can call this function"):
+        single_campaign.remove_reward_epochs(sender=alice)
+
+def test_remove_reward_epochs_revert_not_set(bob, distributor, single_campaign, test_gauge):
+    """Test that epochs cannot be removed if not set"""
+    min_epoch_duration = 4 * DAY
+    
+    # Setup campaign but don't set epochs
+    single_campaign.setup(distributor.address, test_gauge.address, min_epoch_duration, 1, "test", sender=bob)
+    
+    # Try to remove unset epochs
+    with ape.reverts("only can be used on set epochs"):
+        single_campaign.remove_reward_epochs(sender=bob)
+
+def test_remove_reward_epochs_prevents_distribution(bob, charlie, distributor, single_campaign, test_gauge):
+    """Test that distributions cannot happen after epochs are removed"""
+    epochs = [1 * 10**18, 2 * 10**18]
+    min_epoch_duration = 4 * DAY
+    
+    # Setup campaign
+    single_campaign.setup(distributor.address, test_gauge.address, min_epoch_duration, 1, "test", sender=bob)
+    single_campaign.set_reward_epochs(epochs, sender=charlie)
+    
+    # Remove epochs
+    single_campaign.remove_reward_epochs(sender=bob)
+    
+    # Try to distribute rewards
+    with ape.reverts("No remaining reward epochs"):
+        single_campaign.distribute_reward(sender=bob)

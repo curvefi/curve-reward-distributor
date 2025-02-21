@@ -46,6 +46,9 @@ event RewardEpochsSet:
     reward_epochs: DynArray[uint256, 52]
     timestamp: uint256
 
+event RemoveEpochs:
+    timestamp: uint256
+
 event RewardDistributed:
     reward_amount: uint256
     epoch_duration: uint256
@@ -120,6 +123,7 @@ def set_reward_epochs(_reward_epochs: DynArray[uint256, 52]):
     self.is_reward_epochs_set = True
 
     log RewardEpochsSet(_reward_epochs, block.timestamp)    
+
 
 @external
 def distribute_reward():
@@ -330,3 +334,23 @@ def get_number_of_remaining_epochs() -> uint256:
     @return uint256 Remaining number of reward epochs
     """
     return len(self.reward_epochs)
+
+
+@external
+def remove_reward_epochs():
+    """
+    @notice  remove the reward epochs
+    @dev a way to end the campaign early
+    """
+    assert msg.sender in self.guards, "only guards can call this function"
+    assert self.is_reward_epochs_set, "only can be used on set epochs"
+    
+    # Store epochs lenght
+    n: uint256 = len(self.reward_epochs)
+
+    for i: uint256 in range(n, bound=52):
+        self.reward_epochs.pop()
+    # For now we don't want to reset the reward epochs set flag, so campaign can't be reused
+    # self.is_reward_epochs_set = False
+
+    log RemoveEpochs(block.timestamp)    
