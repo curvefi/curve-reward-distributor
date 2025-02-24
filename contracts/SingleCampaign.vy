@@ -10,6 +10,7 @@ from ethereum.ercs import IERC20
 
 interface IDistributor:
     def send_reward_token(_receiving_gauge: address, _amount: uint256): nonpayable
+    def reward_token() -> address: view
 
 # State Variables
 guards: public(DynArray[address, 5])  # Changed from owner to guards
@@ -108,7 +109,7 @@ def set_reward_epochs(_reward_epochs: DynArray[uint256, 52]):
     """
     @notice  Set the reward epochs in reverse order: last value is the first to be distributed, first value is the last to be distributed
     @param _reward_epochs List of reward amounts ordered from first to last epoch
-    @dev Be aware that internal storage is reversed, to use pop() to get the next epoch
+    @dev Be aware that internal storage is reversed, to use pop() to get the next epoch from last entry first
     """
     assert msg.sender in self.guards, "only guards can call this function"
     assert not self.is_reward_epochs_set, "Reward epochs can only be set once"
@@ -148,8 +149,14 @@ def _distribute_reward():
         end_time_buffer = end_time - DISTRIBUTION_BUFFER
         assert block.timestamp >= end_time_buffer, "Minimum time between distributions not met"
     
+    # get the last value of the reward epochs array, internaly this is the next amount to be distributed
     reward_amount: uint256 = self.reward_epochs.pop()
-    
+
+    # Check if distributor has enough balance to send reward
+    reward_token: address = staticcall IDistributor(self.distributor_address).reward_token()
+    assert staticcall IERC20(reward_token).balanceOf(self.distributor_address) >= reward_amount, "Distributor has no reward token to distribute"
+
+
     # Update last distribution time and mark rewards as started
     self.last_reward_distribution_time = block.timestamp
 
@@ -218,6 +225,15 @@ def _execution_allowed() -> bool:
     assert self.is_setup_complete, "Setup not completed"
     assert self.is_reward_epochs_set, "Reward epochs not set"
     assert len(self.reward_epochs) > 0, "No remaining reward epochs"
+
+    # get the last position of the reward epochs array, internaly this is the next amount to be distributed
+    reward_amount: uint256 = self.reward_epochs[len(self.reward_epochs)-1]
+
+    # Check if distributor has enough balance to send reward
+    reward_token: address = staticcall IDistributor(self.distributor_address).reward_token()
+
+    if staticcall IERC20(reward_token).balanceOf(self.distributor_address) < reward_amount:
+        return False
 
     # start execution is always possible if not started    
     if not self.have_rewards_started:

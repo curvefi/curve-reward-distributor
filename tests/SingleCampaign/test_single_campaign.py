@@ -438,13 +438,39 @@ def test_execution_allowed(bob, charlie, distributor, single_campaign, test_gaug
     chain.pending_timestamp = chain.pending_timestamp + DISTRIBUTION_BUFFER + 1
     chain.mine()
     assert single_campaign.execution_allowed()
-    
+
     # Distribute all remaining epochs
     single_campaign.distribute_reward(sender=bob)
     
     # Should revert when no epochs remain
     with ape.reverts("No remaining reward epochs"):
         single_campaign.execution_allowed()
+
+def test_execution_allowed_no_balance(bob, charlie, distributor, single_campaign, test_gauge, chain):
+
+    epochs = [10 * 10**18, 2 * 10**18]
+    min_epoch_duration = 4 * DAY
+
+    DISTRIBUTION_BUFFER = single_campaign.DISTRIBUTION_BUFFER()
+
+    single_campaign.setup(distributor.address, test_gauge.address, min_epoch_duration, 1, "test", sender=bob)
+    single_campaign.set_reward_epochs(epochs, sender=charlie)
+
+    # First distribution, uses all the reward tokens
+    # uses alle the token in the distributor 10*10**18
+    single_campaign.distribute_reward(sender=bob)
+
+    # Should be false when distributor has not enough token 
+    assert single_campaign.execution_allowed() == False
+
+    # Forward time to next epoch
+    chain.pending_timestamp = chain.pending_timestamp + min_epoch_duration
+    chain.mine()
+
+    # Should be fail when distributor has not enough token 
+    with ape.reverts("Distributor has no reward token to distribute"):
+        single_campaign.distribute_reward(sender=bob)
+
 
 def test_execute(bob, charlie, distributor, single_campaign, test_gauge, chain, crvusd_token, reward_token):
     """Test execute function under various conditions"""
