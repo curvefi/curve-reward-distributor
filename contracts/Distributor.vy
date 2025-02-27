@@ -27,7 +27,7 @@ event SentRewardToken:
     receiving_gauge: address
     reward_token: address
     amount: uint256
-    _epoch: uint256
+    epoch: uint256
     timestamp: uint256
 
 

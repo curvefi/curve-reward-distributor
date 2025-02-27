@@ -9,7 +9,7 @@
 from ethereum.ercs import IERC20
 
 interface IDistributor:
-    def send_reward_token(_receiving_gauge: address, _amount: uint256): nonpayable
+    def send_reward_token(_receiving_gauge: address, _amount: uint256, _epoch: uint256): nonpayable
     def reward_token() -> address: view
 
 # State Variables
@@ -168,7 +168,7 @@ def _distribute_reward():
     self.have_rewards_started = True
     
     # Call reward guard to send reward
-    extcall IDistributor(self.distributor_address).send_reward_token(self.receiving_gauge, reward_amount)
+    extcall IDistributor(self.distributor_address).send_reward_token(self.receiving_gauge, reward_amount, self.min_epoch_duration)
 
     self.last_reward_amount = reward_amount
     

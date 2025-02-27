@@ -121,11 +121,13 @@ def test_set_distributor_revert_not_owner(alice, distributor, test_gauge, single
         single_campaign.setup(distributor.address, test_gauge.address, 3 * DAY, 1, "test", sender=alice)
 
 def test_distribution_order(alice, bob, charlie, distributor, single_campaign, reward_token, test_gauge, chain):
+        
     # Setup the reward guard and receiver
     epochs = [2 * 10**18, 1 * 10**18, 5 * 10**18]
     min_epoch_duration = 3 * DAY
     
     single_campaign.set_reward_epochs(epochs, sender=charlie)
+
     single_campaign.setup(distributor.address, test_gauge.address, min_epoch_duration, 1, "test", sender=charlie)
 
     # First distribution - should be 2 tokens
@@ -574,8 +576,6 @@ def test_deploy_multiple_proxies_max_limit(bob, single_campaign, proxy):
     tx = proxy.deploy_multiple_proxies(implementation, num_proxies, sender=bob)
     proxy_addresses = tx.return_value
     
-    print(tx)
-    print(proxy_addresses)
     # Verify correct number of proxies created
     assert len(proxy_addresses) == num_proxies
 
@@ -720,3 +720,15 @@ def test_remove_reward_epochs_prevents_distribution(bob, charlie, distributor, s
     # Try to distribute rewards
     with ape.reverts("No remaining reward epochs"):
         single_campaign.distribute_reward(sender=bob)
+
+def event_logging(tx):
+    # Print events in a structured way
+    for event in tx.events:
+        print(f"\nEvent Type: {type(event).__name__}")
+        # Convert event to dictionary and print each key-value pair
+        if hasattr(event, 'reward_epochs'):
+            print("reward_epochs:")
+            for i, epoch in enumerate(event.reward_epochs):
+                print(f"  {i}: {epoch}")
+        if hasattr(event, 'timestamp'):
+            print(f"timestamp: {event.timestamp}")
