@@ -179,11 +179,10 @@ def setup(ecosystem, network):
 @account_option()
 def deploy_many_campaigns(ecosystem, network, provider, account):
     account.set_autosign(True)
+    max_fee, blockexplorer = setup(ecosystem, network)
 
     guards = GUARDS.split(",")
     single_campaign_contracts = []
-
-    max_fee, blockexplorer = setup(ecosystem, network)
 
     for i in range(20):
         single_campaign = account.deploy(project.SingleCampaign, guards, CRVUSD_ADDRESS, EXECUTE_REWARD_AMOUNT, max_priority_fee="1000 wei", max_fee=max_fee, gas_limit="1000000")
@@ -200,7 +199,7 @@ def deploy_many_campaigns(ecosystem, network, provider, account):
 
         # Sleep for 1 second between deployments
      
-        time.sleep(61)
+        time.sleep(10)
 
     click.echo(single_campaign_contracts)
     click.echo(single_campaign)

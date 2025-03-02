@@ -39,7 +39,7 @@ deploy_taiko:
 	ape run scripts/deploy_manager.py deploy --network taiko:mainnet:node
 
 deploy_many_single_campaigns_taiko:
-	ape run scripts/deploy_manager.py deploy-many-single-campaigns --network taiko:mainnet:node
+	ape run scripts/deploy_manager.py deploy-many-campaigns --network taiko:mainnet:node
 
 deploy_many_campaigns_taiko:
 	ape run scripts/deploy_manager.py deploy-many-campaigns  --network taiko:mainnet:node
@@ -61,6 +61,10 @@ networks_list:
 
 noisy_test:
 	ape test -rP  --capture=no --network ethereum:local:test
+
+single_test:
+	# Usage: make single_test t=test_remove_active_campaign_address_revert_not_guard
+	ape test tests/SingleCampaign/test_single_campaign.py -k "$(t)" --network ethereum:local:test
 
 test:
 	ape test --network ethereum:local:test

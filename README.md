@@ -108,6 +108,12 @@ graph TD
     end
 ```
 
+## Hints
+
+### Taiko
+
+* vyper 4.0.0 verification with "shanghai" on https://taikoscan.io/
+
 
 ## Install
 
@@ -119,6 +125,7 @@ pip install eth-ape'[recommended-plugins]'
 ape plugins install arbitrum
 ape test
 ```
+
 
 
 ## Passtrough 

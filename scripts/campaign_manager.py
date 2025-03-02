@@ -128,6 +128,53 @@ cli.add_command(setup_taiko_campaign)
 
 @click.command(cls=ConnectedProviderCommand)
 @account_option()
+def setup_taiko_campaign_new(ecosystem, network, provider, account):
+    if not DRY_RUN:
+        account.set_autosign(True)
+
+    min_epoch_duration = int(7 * 24 * 60 * 60)
+    campaign_contract_list = CAMPAIGN_CONTRACT_LIST.split(",")
+    amount_steady_epochs = 20  # 29 epochs = epoch is 1 week
+
+    print("USDC/USDT: https://taikoscan.io/address/0xfdb6a782aAa9254fAb82eE39b3fd7728C8442f0D")
+
+    campaign_address = campaign_contract_list.pop(0)   
+    gauge_address = "0x79291f833bc0c8e06c5232144a9ac76faef261ab"
+
+    epochs = [4200] * amount_steady_epochs 
+
+    setup_campaign_for_gauge(campaign_address, gauge_address, min_epoch_duration, account)
+    epochs = convert_to_digits(epochs, min_epoch_duration)
+    set_reward_epochs_for_gauge(campaign_address, epochs, account)
+
+    print("crvUSD / USDT: https://taikoscan.io/address/0xdb23003932abca63b64422a29e11f9c58b9688f5")
+    campaign_address = campaign_contract_list.pop(0)
+    gauge_address = "0x538e5c90c75247f9978e4270f2fb22cfe86a8253"
+    
+    epochs = [2800] * amount_steady_epochs 
+
+    setup_campaign_for_gauge(campaign_address, gauge_address, min_epoch_duration, account)
+    epochs = convert_to_digits(epochs, min_epoch_duration)
+    set_reward_epochs_for_gauge(campaign_address, epochs, account)
+
+    print("crvUSD/USDC : https://taikoscan.io/address/0xb74370f716f1d552684c98a8b4ddf9859960386c")
+    campaign_address = campaign_contract_list.pop(0)
+    gauge_address = "0x9ccd30a992ec6775ad4b95fc267e7fd28d7f52a9"
+
+    epochs = [2800] * amount_steady_epochs 
+
+    setup_campaign_for_gauge(campaign_address, gauge_address, min_epoch_duration, account)
+    epochs = convert_to_digits(epochs, min_epoch_duration)
+    set_reward_epochs_for_gauge(campaign_address, epochs, account)
+    
+
+
+cli.add_command(setup_taiko_campaign_new)
+
+
+
+@click.command(cls=ConnectedProviderCommand)
+@account_option()
 def setup_arbitrum_campaign(ecosystem, network, provider, account):
     if not DRY_RUN:
         account.set_autosign(True)

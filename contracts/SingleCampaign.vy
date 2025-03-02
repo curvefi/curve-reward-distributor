@@ -11,6 +11,7 @@ from ethereum.ercs import IERC20
 interface IDistributor:
     def send_reward_token(_receiving_gauge: address, _amount: uint256, _epoch: uint256): nonpayable
     def reward_token() -> address: view
+    def remove_active_campaign_address(_campaign_address: address): nonpayable
 
 # State Variables
 guards: public(DynArray[address, 5])  # Changed from owner to guards
@@ -368,5 +369,8 @@ def remove_reward_epochs():
         self.reward_epochs.pop()
     # For now we don't want to reset the reward epochs set flag, so campaign can't be reused
     # self.is_reward_epochs_set = False
+
+    # Remove this campaign from distributor's active campaigns
+    extcall IDistributor(self.distributor_address).remove_active_campaign_address(self)
 
     log RemoveEpochs(block.timestamp)    

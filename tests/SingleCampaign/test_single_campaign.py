@@ -732,3 +732,66 @@ def event_logging(tx):
                 print(f"  {i}: {epoch}")
         if hasattr(event, 'timestamp'):
             print(f"timestamp: {event.timestamp}")
+
+def test_active_campaign_addresses(bob, charlie, distributor, single_campaign, test_gauge, chain):
+    """Test active campaign addresses tracking"""
+    epochs = [1 * 10**18, 2 * 10**18]
+    min_epoch_duration = 4 * DAY
+    
+    # Setup campaign
+    single_campaign.setup(distributor.address, test_gauge.address, min_epoch_duration, 1, "test", sender=bob)
+    single_campaign.set_reward_epochs(epochs, sender=charlie)
+    
+    # Check initial active campaign addresses
+    active_addresses = distributor.get_all_active_campaign_addresses()
+    assert len(active_addresses) == 0
+    
+    # First distribution
+    single_campaign.distribute_reward(sender=bob)
+    active_addresses = distributor.get_all_active_campaign_addresses()
+    assert len(active_addresses) == 1
+    assert active_addresses[0] == single_campaign.address
+    
+    # Second distribution with different account
+    chain.pending_timestamp = chain.pending_timestamp + min_epoch_duration
+    chain.mine()
+    single_campaign.distribute_reward(sender=charlie)
+    active_addresses = distributor.get_all_active_campaign_addresses()
+    assert len(active_addresses) == 1  # Still 1 since it's the same campaign contract
+    assert single_campaign.address in active_addresses
+
+def test_remove_active_campaign_address(bob, charlie, distributor, single_campaign, test_gauge):
+    """Test removing active campaign address"""
+    epochs = [1 * 10**18, 2 * 10**18]
+    min_epoch_duration = 4 * DAY
+    
+    # Setup and do distribution
+    single_campaign.setup(distributor.address, test_gauge.address, min_epoch_duration, 1, "test", sender=bob)
+    single_campaign.set_reward_epochs(epochs, sender=charlie)
+    single_campaign.distribute_reward(sender=bob)
+    
+    # Verify address was added
+    active_addresses = distributor.get_all_active_campaign_addresses()
+    assert len(active_addresses) == 1
+    assert single_campaign.address in active_addresses
+    
+    # Remove address
+    distributor.remove_active_campaign_address(single_campaign.address, sender=charlie)
+    
+    # Verify address was removed
+    active_addresses = distributor.get_all_active_campaign_addresses()
+    assert len(active_addresses) == 0
+
+def test_remove_active_campaign_address_revert_not_guard(alice, bob, charlie, distributor, single_campaign, test_gauge):
+    """Test that non-guards cannot remove active campaign addresses"""
+    epochs = [1 * 10**18]
+    min_epoch_duration = 4 * DAY
+    
+    # Setup and do distribution
+    single_campaign.setup(distributor.address, test_gauge.address, min_epoch_duration, 1, "test", sender=bob)
+    single_campaign.set_reward_epochs(epochs, sender=charlie)
+    single_campaign.distribute_reward(sender=bob)
+    
+    # Try to remove address with non-guard account
+    with ape.reverts("only reward guards can call this function"):
+        distributor.remove_active_campaign_address(bob, sender=alice)
