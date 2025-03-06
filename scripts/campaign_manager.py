@@ -7,18 +7,33 @@ from ape import project
 
 from ape.cli import ConnectedProviderCommand, account_option
 
-GUARDS = os.getenv('GUARDS')
-REWARD_TOKEN = os.getenv('REWARD_TOKEN')
-REWARD_TOKEN_DIGITS = os.getenv('REWARD_TOKEN_DIGITS')
-RECOVERY_ADDRESS = os.getenv('RECOVERY_ADDRESS')
+from dotenv import load_dotenv, dotenv_values
+
+# Force reload environment variables from .env_op
+#load_dotenv(".env_op", override=True)
+
+#from dotenv import dotenv_values
+
+# Load environment variables from .env_op
+env_vars = dotenv_values(".env_op")
+
+for key, value in env_vars.items():
+    print(f"{key}: {value}")
+
+GUARDS = env_vars.get('GUARDS')
+
+GUARDS = env_vars.get('GUARDS')
+REWARD_TOKEN = env_vars.get('REWARD_TOKEN')
+REWARD_TOKEN_DIGITS = env_vars.get('REWARD_TOKEN_DIGITS')
+RECOVERY_ADDRESS = env_vars.get('RECOVERY_ADDRESS')
 # EXISTING_TEST_GAUGE = os.getenv('EXISTING_TEST_GAUGE')
 
-REWARD_TOKEN_TESTNET = os.getenv('REWARD_TOKEN_TESTNET')
-GAUGE_ALLOWLIST = os.getenv('GAUGE_ALLOWLIST')
+REWARD_TOKEN_TESTNET = env_vars.get('REWARD_TOKEN_TESTNET')
+GAUGE_ALLOWLIST = env_vars.get('GAUGE_ALLOWLIST')
 
-DEPLOYED_DISTRIBUTOR = os.getenv('DEPLOYED_DISTRIBUTOR')
-DRY_RUN = os.getenv('DRY_RUN')
-CAMPAIGN_CONTRACT_LIST = os.getenv('CAMPAIGN_CONTRACT_LIST')
+DEPLOYED_DISTRIBUTOR = env_vars.get('DEPLOYED_DISTRIBUTOR')
+DRY_RUN = env_vars.get('DRY_RUN')
+CAMPAIGN_CONTRACT_LIST = env_vars.get('CAMPAIGN_CONTRACT_LIST')
 
 
 @click.group()
@@ -182,9 +197,9 @@ def setup_arbitrum_campaign(ecosystem, network, provider, account):
     campaign_contract_list = CAMPAIGN_CONTRACT_LIST.split(",")
 
     # Import lending gauges from env
-    GAUGE_LEND_ARB_LONG = os.getenv('GAUGE_LEND_ARB_LONG')
-    GAUGE_CRVUSD_ARB_CRV = os.getenv('GAUGE_CRVUSD_ARB_CRV')
-    GAUGE_CRVUSD_WBTC_WETH = os.getenv('GAUGE_CRVUSD_WBTC_WETH')
+    GAUGE_LEND_ARB_LONG = os.environ['GAUGE_LEND_ARB_LONG']
+    GAUGE_CRVUSD_ARB_CRV = os.environ['GAUGE_CRVUSD_ARB_CRV']
+    GAUGE_CRVUSD_WBTC_WETH = os.environ['GAUGE_CRVUSD_WBTC_WETH']
 
     min_epoch_duration = int(7 * 24 * 60 * 60)
     # ARB Long
@@ -226,145 +241,163 @@ def setup_op_campaign(ecosystem, network, provider, account):
         account.set_autosign(True)
 
     # Import lending gauges from env
-    GAUGE_LEND_CRV_LONG = os.getenv('GAUGE_LEND_CRV_LONG')
-    GAUGE_LEND_OP_LONG = os.getenv('GAUGE_LEND_OP_LONG') 
-    GAUGE_LEND_WBTC_LONG = os.getenv('GAUGE_LEND_WBTC_LONG')
-    GAUGE_LEND_WETH_LONG = os.getenv('GAUGE_LEND_WETH_LONG')
-    GAUGE_LEND_WSTETH_LONG = os.getenv('GAUGE_LEND_WSTETH_LONG')
-    GAUGE_TRICRYPTO_CRVUSD = os.getenv('GAUGE_TRICRYPTO_CRVUSD')
-    GAUGE_TRICRV = os.getenv('GAUGE_TRICRV')
-    GAUGE_WSTETH_ETH = os.getenv('GAUGE_WSTETH_ETH')
-    GAUGE_SCRVUSD = os.getenv('GAUGE_SCRVUSD')
+    PASSTROUGH_LEND_CRV_LONG = env_vars.get('PASSTROUGH_LEND_CRV_LONG')
+    PASSTROUGH_LEND_OP_LONG = env_vars.get('PASSTROUGH_LEND_OP_LONG')
+    PASSTROUGH_LEND_WBTC_LONG = env_vars.get('PASSTROUGH_LEND_WBTC_LONG')
+    PASSTROUGH_LEND_WETH_LONG = env_vars.get('PASSTROUGH_LEND_WETH_LONG')
+    PASSTROUGH_LEND_WSTETH_LONG = env_vars.get('PASSTROUGH_LEND_WSTETH_LONG')
+    PASSTROUGH_TRICRYPTO_CRVUSD = env_vars.get('PASSTROUGH_TRICRYPTO_CRVUSD')
+    PASSTROUGH_TRICRV = env_vars.get('PASSTROUGH_TRICRV')
+    PASSTROUGH_WSTETH_ETH = env_vars.get('PASSTROUGH_WSTETH_ETH')
+    PASSTROUGH_SCRVUSD = env_vars.get('PASSTROUGH_SCRVUSD')
 
     campaign_contract_list = CAMPAIGN_CONTRACT_LIST.split(",")
 
     min_epoch_duration = int(7 * 24 * 60 * 60)
+    id = 0
     # CRV/crvUSD Long
+    name = "CRV/crvUSD Long"
     print(f"***************************************************************")
     print("CRV/crvUSD Long")
     print(f"***************************************************************")
-    campaign_address = campaign_contract_list.pop(0)    
-    gauge_address = GAUGE_LEND_CRV_LONG
+    campaign_address = campaign_contract_list.pop(0)
+    print(f"campaign_address: {campaign_address}")
+    gauge_address = PASSTROUGH_LEND_CRV_LONG
     epochs = [250, 1000, 1250, 1000, 750, 500, 250]
-
+    
     # Set up campaign for gauge
-    setup_campaign_for_gauge(campaign_address, gauge_address, min_epoch_duration, account)
+    setup_campaign_for_gauge(campaign_address, gauge_address, min_epoch_duration, id, name, account)
     epochs = convert_to_digits(epochs, min_epoch_duration)
-    set_reward_epochs_for_gauge(campaign_address, epochs, account)
+    set_reward_epochs_for_gauge(campaign_address, epochs, name, account)
 
     # OP/crvUSD Long
+    name = "OP/crvUSD Long"
+    id += 1
     print(f"***************************************************************")
     print("OP/crvUSD Long")
     print(f"***************************************************************")
     campaign_address = campaign_contract_list.pop(0)
-    gauge_address = GAUGE_LEND_OP_LONG
+    gauge_address = PASSTROUGH_LEND_OP_LONG
     # double the amount for OP/crvUSD Long
     # reverse order for OP/crvUSD Long
     epochs = [500, 2000, 2500, 2000, 1500, 1000, 500]
 
-    setup_campaign_for_gauge(campaign_address, gauge_address, min_epoch_duration, account)
+    setup_campaign_for_gauge(campaign_address, gauge_address, min_epoch_duration, id, name, account)
     epochs = convert_to_digits(epochs, min_epoch_duration)
-    set_reward_epochs_for_gauge(campaign_address, epochs, account)
+    set_reward_epochs_for_gauge(campaign_address, epochs, name, account)
 
     # WBTC/crvUSD Long
+    name = "WBTC/crvUSD Long"
+    id += 1
     print(f"***************************************************************")
     print("WBTC/crvUSD Long")
     print(f"***************************************************************")
     campaign_address = campaign_contract_list.pop(0)
-    gauge_address = GAUGE_LEND_WBTC_LONG
+    gauge_address = PASSTROUGH_LEND_WBTC_LONG
     epochs = [250, 1000, 1250, 1000, 750, 500, 250]
 
-    setup_campaign_for_gauge(campaign_address, gauge_address, min_epoch_duration, account)
+    setup_campaign_for_gauge(campaign_address, gauge_address, min_epoch_duration, id, name, account)
     epochs = convert_to_digits(epochs, min_epoch_duration)
-    set_reward_epochs_for_gauge(campaign_address, epochs, account)
+    set_reward_epochs_for_gauge(campaign_address, epochs, name, account)
     
     # ETH/crvUSD Long
+    name = "ETH/crvUSD Long"
+    id += 1
     print(f"***************************************************************")
     print("ETH/crvUSD Long")
     print(f"***************************************************************")
     campaign_address = campaign_contract_list.pop(0)
-    gauge_address = GAUGE_LEND_WETH_LONG
+    gauge_address = PASSTROUGH_LEND_WETH_LONG
     epochs = [250, 1000, 1250, 1000, 750, 500, 250]
 
-    setup_campaign_for_gauge(campaign_address, gauge_address, min_epoch_duration, account)
+    setup_campaign_for_gauge(campaign_address, gauge_address, min_epoch_duration, id, name, account)
     epochs = convert_to_digits(epochs, min_epoch_duration)
-    set_reward_epochs_for_gauge(campaign_address, epochs, account)
+    set_reward_epochs_for_gauge(campaign_address, epochs, name, account)
 
     # wsETH/crvUSD Long
+    name = "wsETH/crvUSD Long"
+    id += 1
     print(f"***************************************************************")
     print("wsETH/crvUSD Long")
     print(f"***************************************************************")
     campaign_address = campaign_contract_list.pop(0)
-    gauge_address = GAUGE_LEND_WSTETH_LONG
+    gauge_address = PASSTROUGH_LEND_WSTETH_LONG
     epochs = [250, 1000, 1250, 1000, 750, 500, 250]
 
-    setup_campaign_for_gauge(campaign_address, gauge_address, min_epoch_duration, account)
+    setup_campaign_for_gauge(campaign_address, gauge_address, min_epoch_duration, id, name, account)
     epochs = convert_to_digits(epochs, min_epoch_duration)
-    set_reward_epochs_for_gauge(campaign_address, epochs, account)
+    set_reward_epochs_for_gauge(campaign_address, epochs, name, account)
 
     '''
     campaings for AMM
     '''
 
     # crvUSD/WBTC/WETH (Tricrypto-crvUSD)
+    name = "crvUSD/WBTC/WETH (Tricrypto-crvUSD)"
+    id += 1
     print(f"***************************************************************")
     print("crvUSD/WBTC/WETH (Tricrypto-crvUSD)")
     print(f"***************************************************************")
     campaign_address = campaign_contract_list.pop(0)
-    gauge_address = GAUGE_TRICRYPTO_CRVUSD
+    gauge_address = PASSTROUGH_TRICRYPTO_CRVUSD
     total_amm_epochs = 28  # 28 weeks
 
     epochs = [1071.42857] * total_amm_epochs  # Creates a list of x elements, each with the same value
 
-    setup_campaign_for_gauge(campaign_address, gauge_address, min_epoch_duration, account)
+    setup_campaign_for_gauge(campaign_address, gauge_address, min_epoch_duration, id, name, account)
     epochs = convert_to_digits(epochs, min_epoch_duration)
-    set_reward_epochs_for_gauge(campaign_address, epochs, account)
+    set_reward_epochs_for_gauge(campaign_address, epochs, name, account)
 
 
     # crvUSD/CRV/OP (TriCRV-Optimism)
+    name = "crvUSD/CRV/OP (TriCRV-Optimism)"
+    id += 1
     print(f"***************************************************************")
     print("crvUSD/CRV/OP (TriCRV-Optimism)")
     print(f"***************************************************************")
     campaign_address = campaign_contract_list.pop(0)
-    gauge_address = GAUGE_TRICRV
+    gauge_address = PASSTROUGH_TRICRV
     
     epochs = [2142.85714] * total_amm_epochs   # Creates a list of x elements, each with the same value
 
-    setup_campaign_for_gauge(campaign_address, gauge_address, min_epoch_duration, account)
+    setup_campaign_for_gauge(campaign_address, gauge_address, min_epoch_duration, id, name, account)
     epochs = convert_to_digits(epochs, min_epoch_duration)
-    set_reward_epochs_for_gauge(campaign_address, epochs, account)
+    set_reward_epochs_for_gauge(campaign_address, epochs, name, account)
 
     # ETH/WSTEH
+    name = "ETH/WSTEH"
+    id += 1
     print(f"***************************************************************")
     print("ETH/WSTEH")
     print(f"***************************************************************")
     campaign_address = campaign_contract_list.pop(0)
-    gauge_address = GAUGE_WSTETH_ETH
+    gauge_address = PASSTROUGH_WSTETH_ETH
     
     epochs = [714.28571] * total_amm_epochs   # Creates a list of x elements, each with the same value
 
-    setup_campaign_for_gauge(campaign_address, gauge_address, min_epoch_duration, account)
+    setup_campaign_for_gauge(campaign_address, gauge_address, min_epoch_duration, id, name, account)
     epochs = convert_to_digits(epochs, min_epoch_duration)
-    set_reward_epochs_for_gauge(campaign_address, epochs, account)
+    set_reward_epochs_for_gauge(campaign_address, epochs, name, account)
 
     # crvUSD/scrvUSD 
+    name = "crvUSD/scrvUSD"
+    id += 1
     print(f"***************************************************************")
     print("crvUSD/scrvUSD")
     print(f"***************************************************************")
     campaign_address = campaign_contract_list.pop(0)
-    gauge_address = GAUGE_SCRVUSD
+    gauge_address = PASSTROUGH_SCRVUSD
     
     epochs = [357.14285] * total_amm_epochs   # Creates a list of x elements, each with the same value
 
-    setup_campaign_for_gauge(campaign_address, gauge_address, min_epoch_duration, account)
+    setup_campaign_for_gauge(campaign_address, gauge_address, min_epoch_duration, id, name, account)
     epochs = convert_to_digits(epochs, min_epoch_duration)
-    set_reward_epochs_for_gauge(campaign_address, epochs, account)
+    set_reward_epochs_for_gauge(campaign_address, epochs, name, account)
 
 cli.add_command(setup_op_campaign)
 
 
-def setup_campaign_for_gauge(campaign_address, receiving_gauge, min_epoch_duration, account):
-
+def setup_campaign_for_gauge(campaign_address, receiving_gauge, min_epoch_duration, id, name, account):
     if DRY_RUN:
         print(f"[DRY RUN]\nWould setup campaign: {campaign_address}\n"
               f"distributor: {DEPLOYED_DISTRIBUTOR}\n"
@@ -375,20 +408,20 @@ def setup_campaign_for_gauge(campaign_address, receiving_gauge, min_epoch_durati
     single_campaign = project.SingleCampaign.at(campaign_address)
     is_setup_complete = single_campaign.is_setup_complete()
     if is_setup_complete:
-        print(f"Campaign already setup for campaign: {campaign_address}")
+        print(f"Campaign already setup for campaign: {name} {campaign_address}")
         return
     else:
-        print(f"[DRY RUN]\nWould setup campaign: {campaign_address}\n"
+        print(f"[DRY RUN]\nWould setup campaign: {name} {campaign_address}\n"
             f"distributor: {DEPLOYED_DISTRIBUTOR}\n"
             f"gauge: {receiving_gauge}\n"
             f"min_epoch_duration: {min_epoch_duration}\n")
-        single_campaign.setup(DEPLOYED_DISTRIBUTOR, receiving_gauge, min_epoch_duration, sender=account, max_priority_fee="10 wei", max_fee="0.1 gwei", gas_limit="400000", transaction_acceptance_timeout=300)
-        print(f"Campaign setup complete for campaign: {campaign_address}")
-    
-def set_reward_epochs_for_gauge(campaign_address, epochs, account):
+        single_campaign.setup(DEPLOYED_DISTRIBUTOR, receiving_gauge, min_epoch_duration, id, name, sender=account, max_priority_fee="10 wei", max_fee="0.1 gwei", gas_limit="400000", transaction_acceptance_timeout=300)
+        print(f"Campaign setup complete for campaign: {name} {campaign_address}")
+
+def set_reward_epochs_for_gauge(campaign_address, epochs, name, account):
     epoch_sum = 0
     if DRY_RUN:
-        print(f"[DRY RUN]\nWould set reward epochs for gauge: {campaign_address}\n")
+        print(f"[DRY RUN]\nWould set reward epochs for gauge: {name} {campaign_address}\n")
         for i, epoch in enumerate(epochs):
             epoch_sum += epoch
             print(f"Epoch {i+1}: {epoch}; sum: {epoch_sum}")
@@ -397,15 +430,15 @@ def set_reward_epochs_for_gauge(campaign_address, epochs, account):
     single_campaign = project.SingleCampaign.at(campaign_address)
     is_reward_epochs_set = single_campaign.is_reward_epochs_set()
     if is_reward_epochs_set:
-        print(f"Reward epochs already set for campaign: {campaign_address}")
+        print(f"Reward epochs already set for campaign: {name} {campaign_address}")
         return
     else:
-        print(f"Setting reward epochs for campaign: {campaign_address}\n")  
+        print(f"Setting reward epochs for campaign: {name} {campaign_address}\n")  
         for i, epoch in enumerate(epochs):
             epoch_sum += epoch
             print(f"Epoch {i+1}: {epoch}: sum: {epoch_sum}")
         single_campaign.set_reward_epochs(epochs, sender=account, max_priority_fee="10 wei", max_fee="0.1 gwei", gas_limit="400000", transaction_acceptance_timeout=300)
-        print(f"Reward epochs set for campaign: {campaign_address}")
+        print(f"Reward epochs set for campaign: {name} {campaign_address}")
 
 # Track total rewards across all conversions
 _total_rewards = 0

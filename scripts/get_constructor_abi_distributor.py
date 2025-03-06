@@ -5,13 +5,13 @@ from eth_abi import encode
 
 GUARDS = os.getenv('GUARDS_AND_CAMPAIGNS')
 REWARD_TOKEN = os.getenv('REWARD_TOKEN')
-GAUGE_ALLOWLIST = os.getenv('GAUGE_ALLOWLIST')
+PASSTROUGH_GAUGE_ALLOWLIST = os.getenv('PASSTROUGH_GAUGE_ALLOWLIST')
 RECOVERY_ADDRESS = os.getenv('RECOVERY_ADDRESS')
 
 def get_constructor_args():
     guards = GUARDS.split(",")
     print("Guards:", guards)
-    gauges = GAUGE_ALLOWLIST.split(",")
+    gauges = PASSTROUGH_GAUGE_ALLOWLIST.split(",")
     print("Gauges:", gauges)
 
     # Get constructor ABI

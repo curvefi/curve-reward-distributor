@@ -13,11 +13,14 @@ RECOVERY_ADDRESS = os.getenv('RECOVERY_ADDRESS')
 # EXISTING_TEST_GAUGE = os.getenv('EXISTING_TEST_GAUGE')
 
 REWARD_TOKEN_TESTNET = os.getenv('REWARD_TOKEN_TESTNET')
-GAUGE_ALLOWLIST = os.getenv('GAUGE_ALLOWLIST')
+# GAUGE_ALLOWLIST = os.getenv('GAUGE_ALLOWLIST')
+PASSTROUGH_GAUGE_ALLOWLIST = os.getenv('PASSTROUGH_GAUGE_ALLOWLIST')
 
 DEPLOYED_DISTRIBUTOR = os.getenv('DEPLOYED_DISTRIBUTOR')
 CRVUSD_ADDRESS = os.getenv('CRVUSD_ADDRESS')
 EXECUTE_REWARD_AMOUNT = os.getenv('EXECUTE_REWARD_AMOUNT')
+DRY_RUN = os.getenv('DRY_RUN')
+
 @click.group()
 def cli():
     pass
@@ -50,7 +53,7 @@ def deploy(ecosystem, network, provider, account):
     gauges.append(recovery_gauge)
     """
  
-    gauges = GAUGE_ALLOWLIST.split(",")
+    gauges = PASSTROUGH_GAUGE_ALLOWLIST.split(",")
     click.echo(gauges)
     guards = GUARDS_AND_CAMPAIGNS.split(",")
     click.echo(guards)
@@ -86,83 +89,10 @@ def deploy_single_campaign(ecosystem, network, provider, account):
 
 cli.add_command(deploy_single_campaign)
 
-
-@click.command(cls=ConnectedProviderCommand)
-@account_option()
-def deploy_campaigns_with_many_proxies(ecosystem, network, provider, account):
-    account.set_autosign(True)
-
-    max_fee, blockexplorer = setup(ecosystem, network)
-
-    guards = GUARDS.split(",")
-
-    single_campaign = account.deploy(project.SingleCampaign, guards, CRVUSD_ADDRESS, EXECUTE_REWARD_AMOUNT, max_priority_fee="1000 wei", max_fee=max_fee, gas_limit="1000000")
-       
-    click.echo(single_campaign)
-
-    proxy = account.deploy(project.Proxy, max_priority_fee="10 wei", max_fee=max_fee, gas_limit="400000")
-    click.echo(proxy)
-
-    single_campaign_contracts = []
-    
-    for i in range(25):
-        proxy_campaign_address = proxy.deploy_proxy(single_campaign, max_priority_fee="10 wei", max_fee=max_fee, gas_limit="400000", sender=account)
-        print(f"Campaign setup complete for campaign: {i} {proxy_campaign_address}")        
-        
-        single_campaign_contracts.append(proxy_campaign_address)
-
-        with open("single_campaign_contracts.log", "a+") as f:
-            f.write(f"Single Campaign: {single_campaign}\n")
-            f.write(f"Single Campaign Proxy: {proxy_campaign_address}\n")
-            f.write(f"Link: {blockexplorer}/address/{proxy_campaign_address}\n")
-            f.write(f"Single Campaign Contract List: {[str(contract) for contract in single_campaign_contracts]}\n")
-            f.write(f"{','.join(str(contract) for contract in single_campaign_contracts)}\n")
-            f.write("-" * 80 + "\n")
-
-        time.sleep(61)
-        
-cli.add_command(deploy_campaigns_with_many_proxies)
-
-
-@click.command(cls=ConnectedProviderCommand)
-@account_option()
-def deploy_campaigns_with_many_proxies_no_loop(ecosystem, network, provider, account):
-    account.set_autosign(True)
-
-    max_fee, blockexplorer = setup(ecosystem, network)
-
-    guards = GUARDS.split(",")
-
-    single_campaign = account.deploy(project.SingleCampaign, guards, CRVUSD_ADDRESS, EXECUTE_REWARD_AMOUNT, max_priority_fee="1000 wei", max_fee=max_fee, gas_limit="1000000")
-       
-    click.echo(single_campaign)
-
-    proxy = account.deploy(project.Proxy, max_priority_fee="10 wei", max_fee=max_fee, gas_limit="400000")
-    click.echo(proxy)
-
-    single_campaign_contracts = []
-    n = 20
-
-    proxy_campaign_addresses = proxy.deploy_multiple_proxies(single_campaign, n, max_priority_fee="10 wei", max_fee=max_fee, gas_limit="400000", sender=account)
-    print(f"Campaign setup complete for campaign: {proxy_campaign_addresses}")        
-    
-    single_campaign_contracts.append(proxy_campaign_addresses)
-
-    with open("single_campaign_contracts.log", "a+") as f:
-        f.write(f"Single Campaign: {single_campaign}\n")
-        f.write(f"Single Campaign Proxy: {proxy_campaign_addresses}\n")
-        f.write(f"Link: {blockexplorer}/address/{proxy_campaign_addresses}\n")
-        f.write(f"Single Campaign Contract List: {[str(contract) for contract in proxy_campaign_addresses]}\n")
-        f.write(f"{','.join(str(contract) for contract in single_campaign_contracts)}\n")
-        f.write("-" * 80 + "\n")
-        
-cli.add_command(deploy_campaigns_with_many_proxies_no_loop)
-
 def setup(ecosystem, network):
 
     click.echo(f"ecosystem: {ecosystem.name}")
     click.echo(f"network: {network.name}")
-
 
     if ecosystem.name == 'arbitrum':
         max_fee = "1 gwei"
@@ -178,30 +108,37 @@ def setup(ecosystem, network):
 @click.command(cls=ConnectedProviderCommand)
 @account_option()
 def deploy_many_campaigns(ecosystem, network, provider, account):
-    account.set_autosign(True)
+    print(f"DRY_RUN: {DRY_RUN}")
+    if not DRY_RUN:
+        account.set_autosign(True)
+
     max_fee, blockexplorer = setup(ecosystem, network)
 
     guards = GUARDS.split(",")
     single_campaign_contracts = []
 
     for i in range(20):
-        single_campaign = account.deploy(project.SingleCampaign, guards, CRVUSD_ADDRESS, EXECUTE_REWARD_AMOUNT, max_priority_fee="1000 wei", max_fee=max_fee, gas_limit="1000000")
+        if not DRY_RUN:
+            single_campaign = account.deploy(project.SingleCampaign, guards, CRVUSD_ADDRESS, EXECUTE_REWARD_AMOUNT, max_priority_fee="1000 wei", max_fee=max_fee, gas_limit="1000000")
+            single_campaign_address = single_campaign.address
+        else:
+            single_campaign_address = "0x_dry_run"
 
-        single_campaign_contracts.append(single_campaign)
+        single_campaign_contracts.append(single_campaign_address)
 
         # Log contract address and transaction info
-        with open("single_campaign_contracts.log", "a+") as f:
-            f.write(f"Single Campaign Contract: {single_campaign.address}\n")
-            f.write(f"Link: {blockexplorer}/address/{single_campaign.address}\n")
-            f.write(f"Single Campaign Contract List: {[str(contract) for contract in single_campaign_contracts]}\n")
+        with open(f"logs/single_campaign_contracts_{ecosystem.name}.log", "a+") as f:
+            f.write(f"Single Campaign Contract: {single_campaign_address}\n")
+            f.write(f"Link: {blockexplorer}/address/{single_campaign_address}\n")
+            f.write(f"Single Campaign Contract List \n {[str(contract) for contract in single_campaign_contracts]}\n")
             f.write(f"{','.join(str(contract) for contract in single_campaign_contracts)}\n")
-            f.write("-" * 80 + "\n")
+            f.write("-" * 80 + "\n\n")
 
         # Sleep for 1 second between deployments
-     
-        time.sleep(10)
+        if not DRY_RUN:
+            time.sleep(2)
 
     click.echo(single_campaign_contracts)
-    click.echo(single_campaign)
+    click.echo(single_campaign_address)
 
 cli.add_command(deploy_many_campaigns)

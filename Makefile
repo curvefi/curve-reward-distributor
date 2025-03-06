@@ -38,17 +38,18 @@ deploy_info_taiko:
 deploy_taiko:
 	ape run scripts/deploy_manager.py deploy --network taiko:mainnet:node
 
-deploy_many_single_campaigns_taiko:
-	ape run scripts/deploy_manager.py deploy-many-campaigns --network taiko:mainnet:node
-
 deploy_many_campaigns_taiko:
 	ape run scripts/deploy_manager.py deploy-many-campaigns  --network taiko:mainnet:node
+
+setup_taiko_campaign:
+	ape run scripts/campaign_manager.py setup-taiko-campaign --network taiko:mainnet:node
 
 setup_op_campaign:
 	ape run scripts/campaign_manager.py setup-op-campaign --network optimism:mainnet:node
 
-setup_taiko_campaign:
-	ape run scripts/campaign_manager.py setup-taiko-campaign --network taiko:mainnet:node
+deploy_many_campaigns_optimism:
+	ape run scripts/deploy_manager.py deploy-many-campaigns  --network optimism:mainnet:node
+
 
 rune_next_taiko_epoch:
 	ape run scripts/campaign_manager.py run-next-taiko --network taiko:mainnet:node
