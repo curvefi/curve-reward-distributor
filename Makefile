@@ -44,15 +44,24 @@ deploy_many_campaigns_taiko:
 setup_taiko_campaign:
 	ape run scripts/campaign_manager.py setup-taiko-campaign --network taiko:mainnet:node
 
+rune_next_taiko_epoch:
+	ape run scripts/campaign_manager.py run-next-taiko --network taiko:mainnet:node
+
 setup_op_campaign:
 	ape run scripts/campaign_manager.py setup-op-campaign --network optimism:mainnet:node
 
 deploy_many_campaigns_optimism:
 	ape run scripts/deploy_manager.py deploy-many-campaigns  --network optimism:mainnet:node
 
+deploy_many_campaigns_sonic:
+	ape run scripts/deploy_manager.py deploy-many-campaigns  --network sonic:mainnet:node
 
-rune_next_taiko_epoch:
-	ape run scripts/campaign_manager.py run-next-taiko --network taiko:mainnet:node
+setup_sonic_campaign_dry:
+	ape run scripts/campaign_manager.py setup-sonic-campaign --network sonic:mainnet:node --dry-run
+
+setup_sonic_campaign:
+	ape run scripts/campaign_manager.py setup-sonic-campaign --network sonic:mainnet:node
+
 
 import_pvk:
 	ape accounts import arbideploy

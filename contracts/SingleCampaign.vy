@@ -1,10 +1,14 @@
 #pragma version ^0.4.0
 """
-@title SingleCampaign
-@author martinkrung for curve.fi
+@title SingleCampaign for L2
+@author curve.fi
 @license MIT
 @notice Distributes variable rewards for one gauge through Distributor
+@custom:version 0.0.3
+@custom:security security@curve.fi
 """
+
+VERSION: public(constant(String[8])) = "0.0.3"
 
 from ethereum.ercs import IERC20
 
@@ -33,7 +37,6 @@ execute_reward_amount: public(uint256)
 crvusd_address: public(address)
 
 WEEK: public(constant(uint256)) = 7 * 24 * 60 * 60  # 1 week in seconds
-VERSION: public(constant(String[8])) = "0.9.1"
 DISTRIBUTION_BUFFER: public(constant(uint256)) = 2 * 60 * 60  # 2 hour window for early distribution, max divation is 2.7%
 
 # Events
@@ -209,6 +212,27 @@ def execute():
         block.timestamp
     )
 
+@external
+def end_campaign():
+    """
+    @notice  remove the reward epochs
+    @dev a way to end the campaign early
+    """
+    assert msg.sender in self.guards, "only guards can call this function"
+    assert self.is_reward_epochs_set, "only can be used on set epochs"
+    
+    # Store epochs lenght
+    n: uint256 = len(self.reward_epochs)
+
+    for i: uint256 in range(n, bound=52):
+        self.reward_epochs.pop()
+    # For now we don't want to reset the reward epochs set flag, so campaign can't be reused
+    # self.is_reward_epochs_set = False
+
+    # Remove this campaign from distributor's active campaigns
+    extcall IDistributor(self.distributor_address).remove_active_campaign_address(self)
+
+    log RemoveEpochs(block.timestamp)    
 
 @external
 @view
@@ -351,26 +375,3 @@ def get_number_of_remaining_epochs() -> uint256:
     @return uint256 Remaining number of reward epochs
     """
     return len(self.reward_epochs)
-
-
-@external
-def remove_reward_epochs():
-    """
-    @notice  remove the reward epochs
-    @dev a way to end the campaign early
-    """
-    assert msg.sender in self.guards, "only guards can call this function"
-    assert self.is_reward_epochs_set, "only can be used on set epochs"
-    
-    # Store epochs lenght
-    n: uint256 = len(self.reward_epochs)
-
-    for i: uint256 in range(n, bound=52):
-        self.reward_epochs.pop()
-    # For now we don't want to reset the reward epochs set flag, so campaign can't be reused
-    # self.is_reward_epochs_set = False
-
-    # Remove this campaign from distributor's active campaigns
-    extcall IDistributor(self.distributor_address).remove_active_campaign_address(self)
-
-    log RemoveEpochs(block.timestamp)    

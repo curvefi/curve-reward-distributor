@@ -1,10 +1,14 @@
 #pragma version ^0.4.0
 """
 @title Distributor
-@author martinkrung for curve.fi
+@author curve.fi
 @license MIT
-@notice reward guard contract who can deposit a fixed reward token to allowed gauges
+@notice Distributes variable rewards for one gauge through Distributor
+@custom:version 0.0.3
+@custom:security security@curve.fi
 """
+
+VERSION: public(constant(String[8])) = "0.0.3"
 
 from ethereum.ercs import IERC20
 
@@ -20,7 +24,6 @@ interface PassThrough:
     def deposit_reward_token_with_receiver(_reward_receiver: address, _reward_token: address, _amount: uint256, _epoch: uint256): nonpayable
     
 WEEK: constant(uint256) = 7 * 24 * 60 * 60  # 1 week in seconds
-VERSION: constant(String[8]) = "0.9.1"
 
 guards: public(DynArray[address, 30])
 reward_token: public(address)

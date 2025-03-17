@@ -126,7 +126,11 @@ ape plugins install arbitrum
 ape test
 ```
 
+## changelog
 
+### V 0.0.3
+
+- renamed remove_reward_epochs() to  end_campaign() in SingleCampaign
 
 ## Passtrough 
 
