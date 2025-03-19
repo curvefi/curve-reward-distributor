@@ -721,6 +721,59 @@ def test_end_campaign_prevents_distribution(bob, charlie, distributor, single_ca
     with ape.reverts("No remaining reward epochs"):
         single_campaign.distribute_reward(sender=bob)
 
+def test_remove_active_campaign_address_method(bob, charlie, distributor, single_campaign, test_gauge):
+    """Test the remove_active_campaign_address method in SingleCampaign"""
+    epochs = [1 * 10**18, 2 * 10**18]
+    min_epoch_duration = 4 * DAY
+    
+    # Setup campaign
+    single_campaign.setup(distributor.address, test_gauge.address, min_epoch_duration, 1, "test", sender=bob)
+    single_campaign.set_reward_epochs(epochs, sender=charlie)
+    
+    # Distribute reward to add campaign to active addresses
+    single_campaign.distribute_reward(sender=bob)
+    
+    # Verify campaign is in active addresses
+    active_addresses = distributor.get_all_active_campaign_addresses()
+    assert len(active_addresses) == 1
+    assert active_addresses[0] == single_campaign.address
+    
+    # Remove active campaign address
+    tx = single_campaign.remove_active_campaign_address(sender=bob)
+    
+    # Verify campaign was removed from active addresses
+    active_addresses = distributor.get_all_active_campaign_addresses()
+    assert len(active_addresses) == 0
+    
+
+def test_remove_active_campaign_address_revert_not_guard(alice, bob, charlie, distributor, single_campaign, test_gauge):
+    """Test that non-guards cannot remove active campaign address"""
+    epochs = [1 * 10**18, 2 * 10**18]
+    min_epoch_duration = 4 * DAY
+    
+    # Setup campaign
+    single_campaign.setup(distributor.address, test_gauge.address, min_epoch_duration, 1, "test", sender=bob)
+    single_campaign.set_reward_epochs(epochs, sender=charlie)
+    
+    # Distribute reward to add campaign to active addresses
+    single_campaign.distribute_reward(sender=bob)
+    
+    # Try to remove active campaign address with non-guard account
+    with ape.reverts("only guards can call this function"):
+        single_campaign.remove_active_campaign_address(sender=alice)
+
+def test_remove_active_campaign_address_revert_not_set(bob, distributor, single_campaign, test_gauge):
+    """Test that active campaign address cannot be removed if epochs not set"""
+    min_epoch_duration = 4 * DAY
+    
+    # Setup campaign but don't set epochs
+    single_campaign.setup(distributor.address, test_gauge.address, min_epoch_duration, 1, "test", sender=bob)
+    
+    # Try to remove active campaign address
+    with ape.reverts("only can be used on set epochs"):
+        single_campaign.remove_active_campaign_address(sender=bob)
+
+
 def event_logging(tx):
     # Print events in a structured way
     for event in tx.events:

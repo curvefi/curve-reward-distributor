@@ -130,8 +130,14 @@ ape test
 
 ### V 0.0.3
 
+- allow more guards to have more campaings as backup
 - renamed remove_reward_epochs() to  end_campaign() in SingleCampaign
+- allow to remove_active_campaign_address(), without remove of reward.epochs()
 
 ## Passtrough 
 
 https://arbiscan.io/address/0xB1a17c8BCb17cd0FDAb587c6b09749b021861E70
+
+
+pro-commit hock
+

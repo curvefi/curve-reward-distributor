@@ -51,7 +51,12 @@ event RewardEpochsSet:
     reward_epochs: DynArray[uint256, 52]
     timestamp: uint256
 
-event RemoveEpochs:
+event EndCampaign:
+    timestamp: uint256
+
+event RemoveActiveCampaignAddress:
+    distributor_address: address
+    campaign_address: address
     timestamp: uint256
 
 event RewardDistributed:
@@ -220,6 +225,7 @@ def end_campaign():
     """
     assert msg.sender in self.guards, "only guards can call this function"
     assert self.is_reward_epochs_set, "only can be used on set epochs"
+    assert len(self.reward_epochs) > 0, "No remaining reward epochs"
     
     # Store epochs lenght
     n: uint256 = len(self.reward_epochs)
@@ -229,10 +235,36 @@ def end_campaign():
     # For now we don't want to reset the reward epochs set flag, so campaign can't be reused
     # self.is_reward_epochs_set = False
 
-    # Remove this campaign from distributor's active campaigns
+    self._remove_active_campaign_address()
+
+    log EndCampaign(block.timestamp)    
+
+@external
+def remove_active_campaign_address():
+    """
+    @notice Remove an active campaign address from the distributor
+    """
+    assert msg.sender in self.guards, "only guards can call this function"
+    assert self.is_reward_epochs_set, "only can be used on set epochs"
+
+    self._remove_active_campaign_address()
+
+@internal
+def _remove_active_campaign_address():
+    """
+    @notice Remove an active campaign address from the distributor
+    """
+    assert msg.sender in self.guards, "only guards can call this function"
+    assert self.is_reward_epochs_set, "only can be used on set epochs"
+ 
     extcall IDistributor(self.distributor_address).remove_active_campaign_address(self)
 
-    log RemoveEpochs(block.timestamp)    
+    log RemoveActiveCampaignAddress(
+        self.distributor_address,
+        self,
+        block.timestamp
+    )
+
 
 @external
 @view

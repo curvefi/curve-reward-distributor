@@ -25,7 +25,7 @@ interface PassThrough:
     
 WEEK: constant(uint256) = 7 * 24 * 60 * 60  # 1 week in seconds
 
-guards: public(DynArray[address, 30])
+guards: public(DynArray[address, 40])
 reward_token: public(address)
 receiving_gauges: public(DynArray[address, 20])
 recovery_address: public(address)
@@ -59,7 +59,7 @@ event RecoverToken:
     timestamp: uint256
 
 @deploy
-def __init__(_guards: DynArray[address, 30], _reward_token: address, _receiving_gauges: DynArray[address, 20], _recovery_address: address):
+def __init__(_guards: DynArray[address, 40], _reward_token: address, _receiving_gauges: DynArray[address, 20], _recovery_address: address):
     """
     @notice Contract constructor
     @param _guards set guards who can send reward token to gauges
@@ -158,10 +158,10 @@ def recover_token(_token: address, _amount: uint256):
 
 @external
 @view
-def get_all_guards() -> DynArray[address, 30]:
+def get_all_guards() -> DynArray[address, 40]:
     """
     @notice Get all guards
-    @return DynArray[address, 30] list containing all guards
+    @return DynArray[address, 40] list containing all guards
     """
     return self.guards
 
