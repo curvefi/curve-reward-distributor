@@ -106,7 +106,7 @@ def deploy_many_campaigns(ecosystem, network, provider, account):
     guards = GUARDS.split(",")
     single_campaign_contracts = []
 
-    for i in range(20):
+    for i in range(10):
         if not DRY_RUN:
             single_campaign = account.deploy(project.SingleCampaign, guards, CRVUSD_ADDRESS, CRVUSD_ADDRESS, max_priority_fee="1000 wei", max_fee=max_fee, gas_limit="1000000")
             get_constructor_args(guards, CRVUSD_ADDRESS, EXECUTE_REWARD_AMOUNT)

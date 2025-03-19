@@ -489,15 +489,15 @@ def setup_sonic_campaign(ecosystem, network, provider, account, dry_run=False):
     PASSTROUGH_CRVUSD_USDCE = env_vars.get('PASSTROUGH_CRVUSD_USDCE')
     PASSTROUGH_CRVUSD_TRICRV = env_vars.get('PASSTROUGH_CRVUSD_TRICRV')
     PASSTROUGH_CRVUSD_TRICRYPTO = env_vars.get('PASSTROUGH_CRVUSD_TRICRYPTO')
-    PASSTROUGH_SCRVUSD_CRVUSD = env_vars.get('PASSTROUGH_SCRVUSD_CRVUSD')
     PASSTROUGH_SCUSD_WSTKSCUSD = env_vars.get('PASSTROUGH_SCUSD_WSTKSCUSD')
     PASSTROUGH_SCETH_WSTKSCETH = env_vars.get('PASSTROUGH_SCETH_WSTKSCETH')
+    PASSTROUGH_SCRVUSD_CRVUSD = env_vars.get('PASSTROUGH_SCRVUSD_CRVUSD')
         
     campaign_contract_list = CAMPAIGN_CONTRACT_LIST.split(",")
 
     min_epoch_duration = int(3.5 * 24 * 60 * 60)
     # 3h to test
-    min_epoch_duration = int(3 * 24 *60 * 60)
+    min_epoch_duration = int(3.5 * 24 *60 * 60)
     pre_epoch_amount = 0.1
     id = 0
 
@@ -653,7 +653,7 @@ def setup_sonic_campaign(ecosystem, network, provider, account, dry_run=False):
     print(name)
     print(f"***************************************************************")
     campaign_address = campaign_contract_list.pop(0)
-    gauge_address = PASSTROUGH_SCETH_WSTKSCETH
+    gauge_address = PASSTROUGH_SCRVUSD_CRVUSD
 
     epochs = [pre_epoch_amount] + [625] * total_amm_epochs  # Creates a list of x elements, each with the same value
 
@@ -663,9 +663,12 @@ cli.add_command(setup_sonic_campaign)
 
 
 def config_campaign_for_gauge(campaign_address, gauge_address, epochs, min_epoch_duration, id, name, account, dry_run=False):
+  
     setup_campaign_for_gauge(campaign_address, gauge_address, min_epoch_duration, id, name, account, dry_run)
     epochs = convert_to_digits(epochs, min_epoch_duration)
     set_reward_epochs_for_gauge(campaign_address, epochs, name, account, dry_run)
+    if not dry_run:
+        time.sleep(3)
 
 def setup_campaign_for_gauge(campaign_address, receiving_gauge, min_epoch_duration, id, name, account, dry_run=False):
     if dry_run:
