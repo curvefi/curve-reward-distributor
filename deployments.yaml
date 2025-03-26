@@ -1,37 +1,37 @@
 arbitrum:mainnet:
-  campaign-1: 
+  campaign-1:
     name: leveraged-lending-markets
     date: 2024-06-14
     Distributor:
       address: 0xa7808B10367E6a88a8334a51De9bfE5aF4C0B7D5
       explorer: https://arbiscan.io/address/0xa7808B10367E6a88a8334a51De9bfE5aF4C0B7D5#code
-    RecoveryGauge: 
+    RecoveryGauge:
       address: 0x2e1A7B17e270EFA94Ac94E00aCE5B0625768c4D4
       explorer: https://arbiscan.io/address/0x2e1A7B17e270EFA94Ac94E00aCE5B0625768c4D4#code
     REWARD_MANAGERS: "0x84bC1fC6204b959470BF8A00d871ff8988a3914A,0xa6A7020B3276e86011a33638F3CD8fe02d5E4b61,0xf7Bd34Dd44B92fB2f9C3D2e31aAAd06570a853A6"
     REWARD_TOKEN: "0x912CE59144191C1204E64559FE8253a0e49E6548" # ARB on arbitrum
     GAUGE_ALLOWLIST: "0x4534d3ad205d8bf3087a17847d1c963ae6bf56b1,0xfd632fa4fe5c2e2aef32bd973ce1a68a517de461,0xc0d2d2cfbc20badaef4360f577590790f16c3d43,0x46cc987dcd1d4d84ea5ecb2ce081ac4913b7c305,0xbe543fc11b6eb4ae1a80cb4e06828f06dc3791da,0x8d1600015ae09eaacaed08531a03ecb8f2bd40fa"
     RECOVERY_ADDRESS: "0xa6A7020B3276e86011a33638F3CD8fe02d5E4b61" # grant multisig
-  campaign-2: 
+  campaign-2:
     name: leveraged-lending-markets-with-pools
     date: 2024-08-13
     Distributor:
       address: 0x2700992F2601b756185F0430E859D5fd4E0a9cDb
       explorer: https://arbiscan.io/address/0x2700992F2601b756185F0430E859D5fd4E0a9cDb#code
-    RecoveryGauge: 
+    RecoveryGauge:
       address: 0xfB0681f5e4A89bd64a598B8c76531dE8c468C87c
       explorer: https://arbiscan.io/address/0xfB0681f5e4A89bd64a598B8c76531dE8c468C87c#code
     REWARD_MANAGERS: "0x84bC1fC6204b959470BF8A00d871ff8988a3914A,0xa6A7020B3276e86011a33638F3CD8fe02d5E4b61,0xf7Bd34Dd44B92fB2f9C3D2e31aAAd06570a853A6"
     REWARD_TOKEN: "0x912CE59144191C1204E64559FE8253a0e49E6548" # ARB on arbitrum
     GAUGE_ALLOWLIST: "0x4534d3ad205d8bf3087a17847d1c963ae6bf56b1,0xfd632fa4fe5c2e2aef32bd973ce1a68a517de461,0xc0d2d2cfbc20badaef4360f577590790f16c3d43,0x46cc987dcd1d4d84ea5ecb2ce081ac4913b7c305,0xbe543fc11b6eb4ae1a80cb4e06828f06dc3791da,0x8d1600015ae09eaacaed08531a03ecb8f2bd40fa,0xce5f24b7a95e9cba7df4b54e911b4a3dc8cdaf6f,0xb12600d06753df7c706225c901e6c1346a654d0b,0x7ae49935b8bc11023e5b04d86a44055f999fca31,0x030786336bc7833d4325404a25fe451e4fde9807,0x059e0db6bf882f5fe680dc5409c7adeb99753736,0xB1a17c8BCb17cd0FDAb587c6b09749b021861E70,0x23194e30e54d713c6954ebcd2d5bdcd0171ee2c4,0xb08fef57bfcc5f7bf0ef69c0c090849d497c8f8a'
     RECOVERY_ADDRESS: "0xa6A7020B3276e86011a33638F3CD8fe02d5E4b61" # grant multisig
-  campaign-3: 
+  campaign-3:
     name: leveraged-lending-markets-with-pools_dlcbtc
     date: 2024-08-20
     Distributor:
       address: 0x4259F04C42a2CEB0183C35B239C5C5BF6570b1C4
       explorer: https://arbiscan.io/address/0x4259F04C42a2CEB0183C35B239C5C5BF6570b1C4#code
-    RecoveryGauge: 
+    RecoveryGauge:
       address: 0xfB0681f5e4A89bd64a598B8c76531dE8c468C87c
       explorer: https://arbiscan.io/address/0xfB0681f5e4A89bd64a598B8c76531dE8c468C87c#code
     REWARD_MANAGERS: "0x84bC1fC6204b959470BF8A00d871ff8988a3914A,0xa6A7020B3276e86011a33638F3CD8fe02d5E4b61,0xf7Bd34Dd44B92fB2f9C3D2e31aAAd06570a853A6"

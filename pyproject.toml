@@ -1,0 +1,30 @@
+[project]
+name            = "reward-distributor"
+version         = "0.0.4"
+authors         = [{ name = "Curve.fi", email = "info@curve.fi" }]
+readme          = "README.md"
+requires-python = "==3.12.6"
+
+# Requirements
+dependencies = [
+    "vyper==0.4.0",
+    "titanoboa", # Keep this as a placeholder in the dependencies array
+    "ape-vyper==0.8.8",
+    "eth-ape'[recommended-plugins]"
+]
+
+[tool.uv.sources]
+# titanoboa = { git = "https://github.com/vyperlang/titanoboa.git", rev = "3e8bc3a29c0d837e99ab666649e77acccf88d494" }
+
+[tool.uv]
+dev-dependencies = [
+    "mamushi==0.0.4",
+    "pre-commit==3.8.0",
+    "ruff==0.6.9",
+    "pytest==8.2.2",
+    "plyvel-ci==1.5.1",
+    "python-dotenv==1.0.1",
+]
+
+[tool.ruff]
+line-length = 100

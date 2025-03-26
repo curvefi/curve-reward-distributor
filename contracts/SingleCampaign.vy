@@ -101,7 +101,7 @@ def setup(_distributor_address: address, _receiving_gauge: address, _min_epoch_d
     assert msg.sender in self.guards, "only guards can call this function"
     assert not self.is_setup_complete, "Setup already completed"
     assert 3 * WEEK // 7 <= _min_epoch_duration and _min_epoch_duration <= WEEK  * 4 * 12, 'epoch duration must be between 3 days and a year'
-    
+
     self.distributor_address = _distributor_address
     self.receiving_gauge = _receiving_gauge
     self.min_epoch_duration = _min_epoch_duration
@@ -124,7 +124,7 @@ def set_reward_epochs(_reward_epochs: DynArray[uint256, 52]):
     assert not self.is_reward_epochs_set, "Reward epochs can only be set once"
     assert len(_reward_epochs) > 0 and len(_reward_epochs) <= 52, "Must set between 1 and 52 epochs"
 
-    # Store epochs in reverse order  
+    # Store epochs in reverse order
     n: uint256 = len(_reward_epochs)
 
     for i: uint256 in range(n, bound=52):
@@ -132,7 +132,7 @@ def set_reward_epochs(_reward_epochs: DynArray[uint256, 52]):
 
     self.is_reward_epochs_set = True
 
-    log RewardEpochsSet(_reward_epochs, block.timestamp)    
+    log RewardEpochsSet(_reward_epochs, block.timestamp)
 
 
 @external
@@ -157,7 +157,7 @@ def _distribute_reward():
         end_time = self.last_reward_distribution_time + self.min_epoch_duration
         end_time_buffer = end_time - DISTRIBUTION_BUFFER
         assert block.timestamp >= end_time_buffer, "Minimum time between distributions not met"
-    
+
     # get the last value of the reward epochs array, internaly this is the next amount to be distributed
     reward_amount: uint256 = self.reward_epochs.pop()
 
@@ -175,12 +175,12 @@ def _distribute_reward():
         end_time_buffer = end_time - DISTRIBUTION_BUFFER
 
     self.have_rewards_started = True
-    
+
     # Call reward guard to send reward
     extcall IDistributor(self.distributor_address).send_reward_token(self.receiving_gauge, reward_amount, self.min_epoch_duration)
 
     self.last_reward_amount = reward_amount
-    
+
 
     log RewardDistributed(
         reward_amount,
@@ -202,7 +202,7 @@ def execute():
 
     # Do the actual work here
     self._distribute_reward()
-    
+
     # Check if contract has enough crvUSD balance to pay reward
     # Pay crvUSD reward to caller
     if staticcall IERC20(self.crvusd_address).balanceOf(self) >= self.execute_reward_amount:
@@ -226,7 +226,7 @@ def end_campaign():
     assert msg.sender in self.guards, "only guards can call this function"
     assert self.is_reward_epochs_set, "only can be used on set epochs"
     assert len(self.reward_epochs) > 0, "No remaining reward epochs"
-    
+
     # Store epochs lenght
     n: uint256 = len(self.reward_epochs)
 
@@ -237,7 +237,7 @@ def end_campaign():
 
     self._remove_active_campaign_address()
 
-    log EndCampaign(block.timestamp)    
+    log EndCampaign(block.timestamp)
 
 @external
 def remove_active_campaign_address():
@@ -256,7 +256,7 @@ def _remove_active_campaign_address():
     """
     assert msg.sender in self.guards, "only guards can call this function"
     assert self.is_reward_epochs_set, "only can be used on set epochs"
- 
+
     extcall IDistributor(self.distributor_address).remove_active_campaign_address(self)
 
     log RemoveActiveCampaignAddress(
@@ -292,14 +292,14 @@ def _execution_allowed() -> bool:
     if staticcall IERC20(reward_token).balanceOf(self.distributor_address) < reward_amount:
         return False
 
-    # start execution is always possible if not started    
+    # start execution is always possible if not started
     if not self.have_rewards_started:
         return True
-    
+
     # check if minimum time has passed since last distribution
     if block.timestamp >= self.last_reward_distribution_time + self.min_epoch_duration - DISTRIBUTION_BUFFER:
         return True
-    else: 
+    else:
         return False
 
 @external
@@ -344,12 +344,12 @@ def get_next_epoch_info() -> (uint256, uint256):
     )
     """
     assert len(self.reward_epochs) > 0, "No remaining reward epochs"
-    
+
     seconds_until_next_distribution: uint256 = 0
     if self.have_rewards_started:
         if block.timestamp < self.last_reward_distribution_time + self.min_epoch_duration:
             seconds_until_next_distribution = self.last_reward_distribution_time + self.min_epoch_duration - block.timestamp
-    
+
     return (
         self.reward_epochs[len(self.reward_epochs) - 1],  # Next reward amount to distribute (last element)
         seconds_until_next_distribution

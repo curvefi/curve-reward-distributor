@@ -33,7 +33,7 @@ def deposit_reward_token(_reward_token: address, _amount: uint256, _epoch: uint2
     @param _amount amount of reward token to deposit
     @param _epoch epoch duration, not used, in seconds, to make it compatible with the interface
     """
-    
+
     assert extcall IERC20(self.reward_token).transferFrom(msg.sender, self, _amount, default_return_value=True)
 
 

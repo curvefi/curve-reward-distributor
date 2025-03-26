@@ -4,11 +4,11 @@
 @author curve.fi
 @license MIT
 @notice Distributes variable rewards for one gauge through Distributor
-@custom:version 0.0.3
+@custom:version 0.0.4
 @custom:security security@curve.fi
 """
 
-VERSION: public(constant(String[8])) = "0.0.3"
+VERSION: public(constant(String[8])) = "0.0.4"
 
 from ethereum.ercs import IERC20
 
@@ -22,7 +22,7 @@ interface PassThrough:
     def deposit_reward_token(_reward_token: address, _amount: uint256, _epoch: uint256): nonpayable
     def deposit_reward(_amount: uint256, _epoch: uint256): nonpayable
     def deposit_reward_token_with_receiver(_reward_receiver: address, _reward_token: address, _amount: uint256, _epoch: uint256): nonpayable
-    
+
 WEEK: constant(uint256) = 7 * 24 * 60 * 60  # 1 week in seconds
 
 guards: public(DynArray[address, 40])
@@ -84,10 +84,10 @@ def send_reward_token(_receiving_gauge: address, _amount: uint256, _epoch: uint2
     assert _receiving_gauge in self.receiving_gauges, 'only reward receiver which are allowed'
     assert 3 * WEEK // 7 <= _epoch and _epoch <= WEEK * 4 * 12, 'epoch duration must be between 3 days and a year'
     assert extcall IERC20(self.reward_token).approve(_receiving_gauge, _amount, default_return_value=True)
-    
+
     self._add_active_campaign_address(msg.sender)
 
-    # legacy gauges have no epoch parameter 
+    # legacy gauges have no epoch parameter
     # new deposit_reward_token has epoch parameter default to WEEK
     if _epoch == WEEK:
        extcall LegacyGauge(_receiving_gauge).deposit_reward_token(self.reward_token, _amount)
@@ -109,7 +109,7 @@ def send_reward(_receiving_gauge: address, _amount: uint256, _epoch: uint256 = W
     assert _receiving_gauge in self.receiving_gauges, 'only reward receiver which are allowed'
     assert 3 * WEEK // 7 <= _epoch and _epoch <= WEEK * 4 * 12, 'epoch duration must be between 3 days and a year'
     assert extcall IERC20(self.reward_token).approve(_receiving_gauge, _amount, default_return_value=True)
-    
+
     passthrough: address = _receiving_gauge
 
     self._add_active_campaign_address(msg.sender)
@@ -131,16 +131,16 @@ def remove_active_campaign_address(_campaign_address: address):
     @param _campaign_address The address of the campaign to remove
     """
     assert msg.sender in self.guards, 'only reward guards can call this function'
-    
+
     for i: uint256 in range(len(self.active_campaign_addresses), bound=30):
-        if self.active_campaign_addresses[i] == _campaign_address:    
+        if self.active_campaign_addresses[i] == _campaign_address:
             last_idx: uint256 = len(self.active_campaign_addresses) - 1
             if i != last_idx:
                 self.active_campaign_addresses[i] = self.active_campaign_addresses[last_idx]
             self.active_campaign_addresses.pop()
             log RemoveCampaignAddress(_campaign_address, block.timestamp)
             break
-            
+
     assert _campaign_address not in self.active_campaign_addresses, "campaign address was not successfully removed"
 
 @external

@@ -7,7 +7,7 @@ plugins:
   - name: etherscan
   - name: arbitrum
   - name: evmchains
-  
+
 default_ecosystem: ethereum
 
 taiko:

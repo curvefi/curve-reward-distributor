@@ -1,4 +1,4 @@
-# Automagic Reward Distribution 
+# Automagic Reward Distribution
 
 ## Overview
 This system consists of two main contracts (Distributor and SingleCampaign) designed for managing liquidty incentives on L2 networks. Multiple campaigns can be run in series, with new deployments for each distribution period. Distributor can be run on its own without SingleCampaigns, but then transactions have to be executed manually on every epoch
@@ -81,7 +81,7 @@ graph TD
         D1 -->|"send_reward_token(gauge, amount, epoch)"| D2
         D2 -->|"forwards REWARD TOKEN  from Distributor" | R1[Gauge0/1/2]
         R1 -->| REWARD TOKEN used as rewards| Z1[staked LP]
-      
+
         D1 -->|"recover_token(()"| E1
         E1[Distributor]
         E1 -->|sends REWARD TOKEN  to| G1[RecoveryAddress]
@@ -134,10 +134,9 @@ ape test
 - renamed remove_reward_epochs() to  end_campaign() in SingleCampaign
 - allow to remove_active_campaign_address(), without remove of reward.epochs()
 
-## Passtrough 
+## Passtrough
 
 https://arbiscan.io/address/0xB1a17c8BCb17cd0FDAb587c6b09749b021861E70
 
 
 pro-commit hock
-
