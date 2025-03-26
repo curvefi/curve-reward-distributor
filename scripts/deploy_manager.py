@@ -6,6 +6,7 @@ from dotenv import load_dotenv, dotenv_values
 
 from ape import project
 from ape.cli import ConnectedProviderCommand, account_option
+from datetime import datetime
 
 # Load environment variables from .env_xx
 #env_vars = dotenv_values(".env_sonic")
@@ -24,7 +25,6 @@ PASSTROUGH_GAUGE_ALLOWLIST = os.getenv('PASSTROUGH_GAUGE_ALLOWLIST')
 
 CRVUSD_ADDRESS = os.getenv('CRVUSD_ADDRESS')
 EXECUTE_REWARD_AMOUNT = os.getenv('EXECUTE_REWARD_AMOUNT')
-DRY_RUN = os.getenv('DRY_RUN')
 
 @click.group()
 def cli():
@@ -96,30 +96,35 @@ cli.add_command(deploy_single_campaign)
 
 @click.command(cls=ConnectedProviderCommand)
 @account_option()
-def deploy_many_campaigns(ecosystem, network, provider, account):
-    print(f"DRY_RUN: {DRY_RUN}")
-    if not DRY_RUN:
+@click.option('--dry-run', is_flag=True, help='Run in dry-run mode without making actual deployments')
+def deploy_many_campaigns(ecosystem, network, provider, account, dry_run):
+    if not dry_run:
         account.set_autosign(True)
+    else:
+        print("Dry run mode")
 
     max_fee, blockexplorer = setup(ecosystem, network)
 
     guards = GUARDS.split(",")
     single_campaign_contracts = []
 
-    for i in range(10):
-        if not DRY_RUN:
-            single_campaign = account.deploy(project.SingleCampaign, guards, CRVUSD_ADDRESS, CRVUSD_ADDRESS, max_priority_fee="1000 wei", max_fee=max_fee, gas_limit="1000000")
+    for i in range(20):
+        if not dry_run:
+            click.echo(f"Deploying Single Campaign {i}")
             get_constructor_args(guards, CRVUSD_ADDRESS, EXECUTE_REWARD_AMOUNT)
+
+            single_campaign = account.deploy(project.SingleCampaign, guards, CRVUSD_ADDRESS, EXECUTE_REWARD_AMOUNT, max_priority_fee="1000 wei", max_fee=max_fee, gas_limit="1000000")
+            time.sleep(5)
             single_campaign_address = single_campaign.address
         else:
             get_constructor_args(guards, CRVUSD_ADDRESS, EXECUTE_REWARD_AMOUNT)
-
             single_campaign_address = "0x_dry_run"
 
         single_campaign_contracts.append(single_campaign_address)
 
         # Log contract address and transaction info
         with open(f"logs/single_campaign_contracts_{ecosystem.name}.log", "a+") as f:
+            f.write(f"Deployed at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
             f.write(f"Single Campaign Contract: {single_campaign_address}\n")
             f.write(f"Link: {blockexplorer}/address/{single_campaign_address}\n")
             f.write(f"Single Campaign Contract List \n {[str(contract) for contract in single_campaign_contracts]}\n")
@@ -127,7 +132,7 @@ def deploy_many_campaigns(ecosystem, network, provider, account):
             f.write("-" * 80 + "\n\n")
 
         # Sleep for 1 second between deployments
-        if not DRY_RUN:
+        if not dry_run:
             time.sleep(2)
 
     click.echo(single_campaign_contracts)
@@ -148,7 +153,7 @@ def setup(ecosystem, network):
         else:
             blockexplorer = "https://arbiscan.io"
     elif ecosystem.name == 'optimism':
-        max_fee = "0.0001 gwei"
+        max_fee = "0.002 gwei"
         blockexplorer = "https://optimistic.etherscan.io"
     elif ecosystem.name == 'taiko':
         if network.name == 'sepolia':   
@@ -164,4 +169,8 @@ def setup(ecosystem, network):
     else:
         max_fee = "0.1 gwei"
         blockexplorer = "https://sepolia.arbiscan.io"
+
+    click.echo(f"max_fee: {max_fee}")
+    click.echo(f"blockexplorer: {blockexplorer}")
+
     return max_fee, blockexplorer

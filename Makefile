@@ -50,8 +50,15 @@ rune_next_taiko_epoch:
 setup_op_campaign:
 	ape run scripts/campaign_manager.py setup-op-campaign --network optimism:mainnet:node
 
+deploy_many_campaigns_optimism_dry:
+	ape run scripts/deploy_manager.py deploy-many-campaigns  --network optimism:mainnet:node --dry-run
+
 deploy_many_campaigns_optimism:
 	ape run scripts/deploy_manager.py deploy-many-campaigns  --network optimism:mainnet:node
+
+deploy_single_campaign_optimism:
+	ape run scripts/deploy_manager.py deploy_single_campaign --network optimism:mainnet:node
+
 
 deploy_many_campaigns_sonic:
 	ape run scripts/deploy_manager.py deploy-many-campaigns  --network sonic:mainnet:node
