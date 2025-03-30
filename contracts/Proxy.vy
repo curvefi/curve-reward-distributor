@@ -1,4 +1,4 @@
-#pragma version ^0.4.0
+# pragma version ^0.4.0
 """
 @title Proxy
 @author martinkrung for curve.fi
@@ -6,15 +6,18 @@
 @notice Distributes variable rewards for one gauge through Distributor
 """
 
+
 event NewProxy:
     proxy: address
     implementation: address
     timestamp: uint256
 
+
 event MultipleNewProxy:
     proxies: DynArray[address, 27]
     implementation: address
     timestamp: uint256
+
 
 interface ISProxy:
     def deploy_proxy(implementation: address) -> address: nonpayable
@@ -29,13 +32,16 @@ def deploy_proxy(implementation: address) -> address:
 
     return proxy
 
+
 @external
-def deploy_multiple_proxies(implementation: address, n: uint256) -> DynArray[address, 27]:
+def deploy_multiple_proxies(
+    implementation: address, n: uint256
+) -> DynArray[address, 27]:
     # Creates and returns the proxy address
     proxies: DynArray[address, 27] = []
 
     for i: uint256 in range(n, bound=27):
-        proxies.append( extcall ISProxy(self).deploy_proxy(implementation))
+        proxies.append(extcall ISProxy(self).deploy_proxy(implementation))
 
     log MultipleNewProxy(proxies, implementation, block.timestamp)
 

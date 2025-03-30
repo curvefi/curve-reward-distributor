@@ -1,4 +1,4 @@
-#pragma version ^0.4.0
+# pragma version ^0.4.0
 # @dev Implementation of ERC-20 token standard.
 # @author Takayuki Jimba (@yudetamago)
 # https://github.com/ethereum/EIPs/blob/master/EIPS/eip-20.md
@@ -8,15 +8,18 @@ from ethereum.ercs import IERC20
 
 VERSION: constant(String[8]) = "0.9.1"
 
+
 event Transfer:
     sender: indexed(address)
     receiver: indexed(address)
     value: uint256
 
+
 event Approval:
     owner: indexed(address)
     spender: indexed(address)
     value: uint256
+
 
 name: public(String[32])
 symbol: public(String[32])
@@ -47,9 +50,8 @@ def __init__():
     log Transfer(empty(address), msg.sender, init_supply)
 
 
-
 @external
-def transfer(_to : address, _value : uint256) -> bool:
+def transfer(_to: address, _value: uint256) -> bool:
     """
     @dev Transfer token for a specified address
     @param _to The address to transfer to.
@@ -64,12 +66,12 @@ def transfer(_to : address, _value : uint256) -> bool:
 
 
 @external
-def transferFrom(_from : address, _to : address, _value : uint256) -> bool:
+def transferFrom(_from: address, _to: address, _value: uint256) -> bool:
     """
-     @dev Transfer tokens from one address to another.
-     @param _from address The address which you want to send tokens from
-     @param _to address The address which you want to transfer to
-     @param _value uint256 the amount of tokens to be transferred
+    @dev Transfer tokens from one address to another.
+    @param _from address The address which you want to send tokens from
+    @param _to address The address which you want to transfer to
+    @param _value uint256 the amount of tokens to be transferred
     """
     # NOTE: vyper does not allow underflows
     #       so the following subtraction would revert on insufficient balance
@@ -83,7 +85,7 @@ def transferFrom(_from : address, _to : address, _value : uint256) -> bool:
 
 
 @external
-def approve(_spender : address, _value : uint256) -> bool:
+def approve(_spender: address, _value: uint256) -> bool:
     """
     @dev Approve the passed address to spend the specified amount of tokens on behalf of msg.sender.
          Beware that changing an allowance with this method brings the risk that someone may use both the old
