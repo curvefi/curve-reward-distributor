@@ -247,8 +247,8 @@ def setup_arbitrum_campaign(ecosystem, network, provider, account, dry_run=False
         raise Exception("Wrong environment variables")
 
     # Import lending gauges from env
-
-    PASSTROUGH_TRICRYPTO_CRVUSD = os.getenv("   PASSTROUGH_TRICRYPTO_CRVUSD")
+    # max is 4,738 ARB Weekly!
+    PASSTROUGH_TRICRYPTO_CRVUSD = os.getenv("PASSTROUGH_TRICRYPTO_CRVUSD")
     PASSTROUGH_TRICRV = os.getenv("PASSTROUGH_TRICRV")
 
     campaign_contract_list = CAMPAIGN_CONTRACT_LIST.split(",")

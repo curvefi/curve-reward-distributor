@@ -22,10 +22,12 @@ interface PassThrough:
     def deposit_reward_token(_reward_token: address, _amount: uint256, _epoch: uint256): nonpayable
     def deposit_reward(_amount: uint256, _epoch: uint256): nonpayable
     def deposit_reward_token_with_receiver(_reward_receiver: address, _reward_token: address, _amount: uint256, _epoch: uint256): nonpayable
+    def single_reward_token() -> address: view
 
 WEEK: constant(uint256) = 7 * 24 * 60 * 60  # 1 week in seconds
 
-guards: public(DynArray[address, 40])
+guards: public(DynArray[address, 5])
+campaign_addresses: public(DynArray[address, 30])
 reward_token: public(address)
 receiving_gauges: public(DynArray[address, 20])
 recovery_address: public(address)
@@ -59,15 +61,17 @@ event RecoverToken:
     timestamp: uint256
 
 @deploy
-def __init__(_guards: DynArray[address, 40], _reward_token: address, _receiving_gauges: DynArray[address, 20], _recovery_address: address):
+def __init__(_guards: DynArray[address, 5], _campaign_addresses: DynArray[address, 30], _reward_token: address, _receiving_gauges: DynArray[address, 20], _recovery_address: address):
     """
     @notice Contract constructor
     @param _guards set guards who can send reward token to gauges
+    @param _campaign_addresses set campaign addresses
     @param _reward_token set reward token address
     @param _receiving_gauges allowed gauges to receiver reward
     @param _recovery_address set recovery address
     """
     self.guards = _guards
+    self.campaign_addresses = _campaign_addresses
     self.reward_token = _reward_token
     self.receiving_gauges = _receiving_gauges
     self.recovery_address = _recovery_address
@@ -80,7 +84,7 @@ def send_reward_token(_receiving_gauge: address, _amount: uint256, _epoch: uint2
     @param _amount The amount of reward token being sent
     @param _epoch The duration the rewards are distributed across in seconds. Between 3 days and a year, week by default
     """
-    assert msg.sender in self.guards, 'only reward guards can call this function'
+    assert msg.sender in self.guards or msg.sender in self.campaign_addresses, 'only reward guards or campaign contracts can call this function'
     assert _receiving_gauge in self.receiving_gauges, 'only reward receiver which are allowed'
     assert 3 * WEEK // 7 <= _epoch and _epoch <= WEEK * 4 * 12, 'epoch duration must be between 3 days and a year'
     assert extcall IERC20(self.reward_token).approve(_receiving_gauge, _amount, default_return_value=True)
@@ -97,26 +101,27 @@ def send_reward_token(_receiving_gauge: address, _amount: uint256, _epoch: uint2
     log SentRewardToken(_receiving_gauge, self.reward_token, _amount, _epoch, block.timestamp)
 
 @external
-def send_reward(_receiving_gauge: address, _amount: uint256, _epoch: uint256 = WEEK):
+def send_reward(_passthrough: address, _amount: uint256, _epoch: uint256 = WEEK):
     """
-    @notice send reward token from contract to gauge
-    @param _receiving_gauge gauges to receiver reward
+    @notice send reward token from contract to passthrough which has a single reward receiver and a fixed reward token
+    @param _passthrough passthrough address
     @param _amount The amount of reward token being sent
     @param _epoch The duration the rewards are distributed across in seconds. Between 3 days and a year, week by default
     @dev Todo: not working yet, add passthrough config somewhere
     """
-    assert msg.sender in self.guards, 'only reward guards can call this function'
-    assert _receiving_gauge in self.receiving_gauges, 'only reward receiver which are allowed'
+    assert msg.sender in self.guards or msg.sender in self.campaign_addresses, 'only reward guards or campaign contracts can call this function'
+    assert _passthrough in self.receiving_gauges, 'only reward receiver which are allowed'
     assert 3 * WEEK // 7 <= _epoch and _epoch <= WEEK * 4 * 12, 'epoch duration must be between 3 days and a year'
-    assert extcall IERC20(self.reward_token).approve(_receiving_gauge, _amount, default_return_value=True)
+    assert self.reward_token == staticcall PassThrough(_passthrough).single_reward_token(), 'reward token mismatch or single reward token not set'
 
-    passthrough: address = _receiving_gauge
+    # approve passthrough to spend reward token
+    assert extcall IERC20(self.reward_token).approve(_passthrough, _amount, default_return_value=True)
 
     self._add_active_campaign_address(msg.sender)
 
-    extcall PassThrough(passthrough).deposit_reward_token_with_receiver(_receiving_gauge, self.reward_token, _amount, _epoch)
+    extcall PassThrough(_passthrough).deposit_reward(_amount, _epoch)
 
-    log SentReward(_receiving_gauge, self.reward_token, _amount, _epoch, block.timestamp)
+    log SentReward(_passthrough, self.reward_token, _amount, _epoch, block.timestamp)
 
 @internal
 def _add_active_campaign_address(_campaign_address: address):
@@ -130,7 +135,7 @@ def remove_active_campaign_address(_campaign_address: address):
     @notice Remove an active campaign address from the list
     @param _campaign_address The address of the campaign to remove
     """
-    assert msg.sender in self.guards, 'only reward guards can call this function'
+    assert msg.sender in self.guards or msg.sender in self.campaign_addresses, 'only reward guards or campaign contracts can call this function'
 
     for i: uint256 in range(len(self.active_campaign_addresses), bound=30):
         if self.active_campaign_addresses[i] == _campaign_address:

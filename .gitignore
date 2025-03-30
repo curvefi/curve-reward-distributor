@@ -10,3 +10,5 @@ reports/
 .build
 notes.txt
 deploy_log.md
+logs
+uv.lock

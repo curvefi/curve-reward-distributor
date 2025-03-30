@@ -128,6 +128,11 @@ ape test
 
 ## changelog
 
+### V 0.0.4
+
+- distributor can now use passtrough with fixed token and gauge over send_reward(), but current campaing do not use that function
+
+
 ### V 0.0.3
 
 - allow more guards to have more campaings as backup

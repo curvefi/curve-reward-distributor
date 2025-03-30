@@ -912,7 +912,7 @@ def test_remove_active_campaign_address_revert_not_guard_last(
     single_campaign.distribute_reward(sender=bob)
 
     # Try to remove address with non-guard account
-    with ape.reverts("only reward guards can call this function"):
+    with ape.reverts("only reward guards or campaign contracts can call this function"):
         distributor.remove_active_campaign_address(bob, sender=alice)
 
 

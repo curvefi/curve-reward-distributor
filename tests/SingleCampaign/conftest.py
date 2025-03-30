@@ -42,7 +42,6 @@ def single_campaign(project, alice, bob, charlie, crvusd_token):
     contract = alice.deploy(
         project.SingleCampaign, [bob, charlie], crvusd_token, execute_reward_amount
     )
-
     return contract
 
 
@@ -52,7 +51,7 @@ def distributor(project, alice, bob, charlie, diana, reward_token, test_gauge, s
     # diana is recovery address
     print(single_campaign)
     distributor_contract = alice.deploy(
-        project.Distributor, [bob, charlie, single_campaign], reward_token, [test_gauge], diana
+        project.Distributor, [bob, charlie], [single_campaign], reward_token, [test_gauge], diana
     )
     reward_token.approve(distributor_contract, 10**19, sender=bob)
     print(distributor_contract)

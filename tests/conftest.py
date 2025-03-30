@@ -23,3 +23,9 @@ def charlie(accounts):
 # diana is recovery address
 def diana(accounts):
     return accounts[3]
+
+
+@pytest.fixture(scope="session")
+# effi is campaign address
+def effi(accounts):
+    return accounts[4]
