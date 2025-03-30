@@ -134,6 +134,10 @@ uv sync
 
 ## changelog
 
+### V 0.0.5
+
+ - guards now can add/remove campaings to/from  distributor 
+
 ### V 0.0.4
 
 - distributor can now use passtrough with fixed token and gauge over send_reward(), but current campaing do not use that function

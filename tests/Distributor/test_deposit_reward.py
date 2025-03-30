@@ -270,3 +270,20 @@ def test_distributor_send_reward_epoch_revert_too_short(bob, test_gauge, distrib
 def test_distributor_send_reward_epoch_revert_too_long(bob, test_gauge, distributor_contract):
     with ape.reverts("epoch duration must be between 3 days and a year"):
         distributor_contract.send_reward(test_gauge, 10**18, 53 * WEEK, sender=bob)
+
+
+def test_add_campaign_address(alice, bob, single_campaign, distributor_contract):
+    distributor_contract.add_campaign_address(single_campaign, sender=bob)
+    assert distributor_contract.campaign_addresses(0) == single_campaign
+
+def test_add_campaign_address_non_contract_revert(alice, bob, distributor_contract):
+    with ape.reverts("campaign address must be a contract"):
+        distributor_contract.add_campaign_address(bob, sender=bob)
+
+
+def test_remove_campaign_address(alice, bob, single_campaign, distributor_contract):
+    distributor_contract.add_campaign_address(single_campaign, sender=bob)
+    assert distributor_contract.campaign_addresses(0) == single_campaign
+
+    distributor_contract.remove_campaign_address(single_campaign, sender=bob)
+    assert distributor_contract.get_all_campaign_addresses() == []

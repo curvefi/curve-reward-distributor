@@ -29,8 +29,11 @@ deploy_arbitrum_sepolia:
 deploy_arbitrum:
 	ape run scripts/deploy_manager.py deploy --network arbitrum:mainnet:infura
 
-rune_next_arbi_epoch:
-	ape run scripts/campaign_manager.py run-next-arbi --network arbitrum:mainnet:infura
+setup_arbitrum_campaign:
+	ape run scripts/campaign_manager.py setup-arbitrum-campaign --network arbitrum:mainnet:infura
+
+setup_arbitrum_campaign_dry:
+	ape run scripts/campaign_manager.py setup-arbitrum-campaign --network arbitrum:mainnet:infura --dry-run
 
 deploy_info_taiko:
 	ape run scripts/deploy_manager.py info --network taiko:mainnet:node

@@ -246,6 +246,8 @@ def setup_arbitrum_campaign(ecosystem, network, provider, account, dry_run=False
     if CHAIN != "arbitrum":
         raise Exception("Wrong environment variables")
 
+    max_fee, blockexplorer = setup(ecosystem, network)
+
     # Import lending gauges from env
     # max is 4,738 ARB Weekly!
     PASSTROUGH_TRICRYPTO_CRVUSD = os.getenv("PASSTROUGH_TRICRYPTO_CRVUSD")
@@ -254,6 +256,7 @@ def setup_arbitrum_campaign(ecosystem, network, provider, account, dry_run=False
     campaign_contract_list = CAMPAIGN_CONTRACT_LIST.split(",")
 
     min_epoch_duration = int(7 * 24 * 60 * 60)
+    weeks = 3 * 52
 
     id = 0
 
@@ -264,12 +267,22 @@ def setup_arbitrum_campaign(ecosystem, network, provider, account, dry_run=False
     campaign_address = campaign_contract_list.pop(0)
     print(f"campaign_address: {campaign_address}")
     gauge_address = PASSTROUGH_TRICRYPTO_CRVUSD
-    epochs = [500, 500, 500, 500, 500, 500, 500, 500]
+    epochs = [4000] * weeks
 
     # Set up campaign for gauge
-    setup_campaign_for_gauge(campaign_address, gauge_address, min_epoch_duration, id, name, account)
-    epochs = convert_to_digits(epochs, min_epoch_duration)
-    set_reward_epochs_for_gauge(campaign_address, epochs, name, account)
+    # Set up campaign for gauge
+    config_campaign_for_gauge(
+        campaign_address,
+        gauge_address,
+        epochs,
+        min_epoch_duration,
+        id,
+        name,
+        account,
+        max_fee,
+        blockexplorer,
+        dry_run,
+    )
 
     name = "crvUSD/CRV/ARB (TriCRV-Arbitrum)"
     id += 1
@@ -278,13 +291,23 @@ def setup_arbitrum_campaign(ecosystem, network, provider, account, dry_run=False
     print("***************************************************************")
     campaign_address = campaign_contract_list.pop(0)
     gauge_address = PASSTROUGH_TRICRV
+    
+    epochs = [4000] * weeks
 
-    epochs = [4600, 4400, 4200, 4000, 3800, 3600, 3400]
-
-    setup_campaign_for_gauge(campaign_address, gauge_address, min_epoch_duration, id, name, account)
-    epochs = convert_to_digits(epochs, min_epoch_duration)
-    set_reward_epochs_for_gauge(campaign_address, epochs, name, account)
-
+    # Set up campaign for gauge
+    config_campaign_for_gauge(
+        campaign_address,
+        gauge_address,
+        epochs,
+        min_epoch_duration,
+        id,
+        name,
+        account,
+        max_fee,
+        blockexplorer,
+        dry_run,
+    )
+ 
 
 cli.add_command(setup_arbitrum_campaign)
 

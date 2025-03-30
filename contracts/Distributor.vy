@@ -4,11 +4,11 @@
 @author curve.fi
 @license MIT
 @notice Distributes variable rewards for one gauge through Distributor
-@custom:version 0.0.4
+@custom:version 0.0.5
 @custom:security security@curve.fi
 """
 
-VERSION: public(constant(String[8])) = "0.0.4"
+VERSION: public(constant(String[8])) = "0.0.5"
 
 from ethereum.ercs import IERC20
 
@@ -65,15 +65,22 @@ event SentReward:
     timestamp: uint256
 
 
-event AddActiveCampaignAddress:
+event AddCampaignAddress:
     campaign_address: address
     timestamp: uint256
-
 
 event RemoveCampaignAddress:
     campaign_address: address
     timestamp: uint256
 
+event AddActiveCampaignAddress:
+    campaign_address: address
+    timestamp: uint256
+
+
+event RemoveActiveCampaignAddress:
+    campaign_address: address
+    timestamp: uint256
 
 event RecoverToken:
     token: address
@@ -184,6 +191,41 @@ def send_reward(
     )
 
 
+@external
+def add_campaign_address(_new_campaign_address: address):
+    """
+    @notice Add a campaign address to the list
+    @param _new_campaign_address The address of the campaign to add
+    @dev This function adds contract addresses which have access to the funds on this contract! 
+    """
+    assert msg.sender in self.guards, "only guards can call this function"
+    assert _new_campaign_address not in self.campaign_addresses, "prevent to add the same campaign address twice"
+    assert _new_campaign_address.is_contract, "campaign address must be a contract"
+
+    self.campaign_addresses.append(_new_campaign_address)
+
+    log AddCampaignAddress(_new_campaign_address, block.timestamp)
+
+
+@external
+def remove_campaign_address(_rm_campaign_address: address):
+    """
+    @notice Remove an active campaign address from the list
+    @param _rm_campaign_address The address of the campaign to remove
+    @dev This function is only callable by guards
+    """
+    assert msg.sender in self.guards, "only guards can call this function"
+
+    for i: uint256 in range(len(self.campaign_addresses), bound=30):
+        if self.campaign_addresses[i] == _rm_campaign_address:
+            last_idx: uint256 = len(self.campaign_addresses) - 1
+            if i != last_idx:
+                self.campaign_addresses[i] = self.campaign_addresses[last_idx]
+            self.campaign_addresses.pop()
+            log RemoveCampaignAddress(_rm_campaign_address, block.timestamp)
+            break
+  
+
 @internal
 def _add_active_campaign_address(_campaign_address: address):
     if _campaign_address not in self.active_campaign_addresses:
@@ -209,7 +251,7 @@ def remove_active_campaign_address(_campaign_address: address):
                     i
                 ] = self.active_campaign_addresses[last_idx]
             self.active_campaign_addresses.pop()
-            log RemoveCampaignAddress(_campaign_address, block.timestamp)
+            log RemoveActiveCampaignAddress(_campaign_address, block.timestamp)
             break
     assert (
         _campaign_address not in self.active_campaign_addresses
@@ -253,6 +295,14 @@ def get_all_receiving_gauges() -> DynArray[address, 20]:
     """
     return self.receiving_gauges
 
+@external
+@view
+def get_all_campaign_addresses() -> DynArray[address, 30]:
+    """
+    @notice Get all campaign addresses
+    @return DynArray[address, 30] list containing all campaign addresses
+    """
+    return self.campaign_addresses
 
 @external
 @view
