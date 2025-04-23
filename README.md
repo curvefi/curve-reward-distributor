@@ -103,6 +103,24 @@ graph TD
         F1 -->|"calls send_reward_token() on  Distributor"| G1[Gauge]
     end
 ```
+## Overall Interaction
+```mermaid
+graph TD
+    subgraph Overall Interaction
+        A1[Anyone]
+        A1 -->|"distribute_reward() 
+        callable after each epoch is over "| D1
+        D1[Single Campaing]
+        D1 -->|"distribute_reward()
+        with definde amount and fixed passthrough on"| D2
+        D2["Distributor (owns reward tokens)"]
+        D2 -->|"calls deposit_reward_token() with reward token and amount on"| G1 
+        G1["Passthrough (send reward tokens forward)"] 
+        G1 --> |"calls deposit_reward_token() on"| H1 
+        H1[Gauge]
+    end
+```
+
 
 ## Hints
 
